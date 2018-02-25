@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
-using SpreadsheetCalculator.Calculation;
+using System.Linq;
+using SpreadsheetCalculator.ExpressionEvaluator;
+using SpreadsheetCalculator.SpreadsheetCellToken;
 using SpreadsheetCalculator.Utils;
 
 namespace SpreadsheetCalculator
@@ -35,14 +37,6 @@ namespace SpreadsheetCalculator
             ColumnNumber = columnNumber;
 
             Cells = new SpreadsheetCell[rowNumber, columnNumber];
-
-            for (var i = 0; i < rowNumber; i++)
-            {
-                for (var j = 0; j < columnNumber; j++)
-                {
-                    Cells[i, j] = new SpreadsheetCell(i, j);
-                }
-            }
         }
 
         /// <summary>
@@ -53,22 +47,50 @@ namespace SpreadsheetCalculator
         /// <param name="value">Cell value.</param>
         public void SetCell(int rowNumber, int columnNumber, string value)
         {
-            var cell = Cells[rowNumber, columnNumber];
-
-            cell.SetValue(value, (i, j) => Cells[i, j]);
+            Cells[rowNumber, columnNumber] = new SpreadsheetCell(rowNumber, columnNumber, value);
         }
 
         /// <summary>
         /// Process Spreadsheet data.
         /// </summary>
-        public void Calculate(ICalculator calculator)
+        public void Calculate(IExpressionEvaluator calculator)
         {
-            var sort = TopologicalSort.Sort(SpreadsheetCells(), x => x.GetDependencies());
+            var sortedCells = TopologicalSort.Sort(
+                SpreadsheetCells(), 
+                cell => cell.GetTokens()
+                    .Where(token => token.Type == TokenType.Reference)
+                    .Select(cellRefToken => GetCell(cellRefToken.Value))
+            );
 
-            foreach (var cell in sort)
+            foreach (var cell in sortedCells)
             {
-                cell.Calculate(calculator);
+                var strTokens = cell.GetTokens().Select(token =>
+                {
+                    if (token.Type == TokenType.Reference)
+                    {
+                        return GetCell(token.Value).CalculatedValue.ToString();
+                    }
+                    else
+                    {
+                        return token.Value;
+                    }
+                });
+
+                cell.CalculatedValue = calculator.Evaluate(strTokens);
             }
+        }
+
+        /// <summary>
+        /// Get SpreadsheetCell by Key.
+        /// </summary>
+        /// <param name="key">Key of SpreadsheetCell</param>
+        /// <returns></returns>
+        private SpreadsheetCell GetCell(string key)
+        {
+            var rowNumber = AlphabeticHelper.LetterToInt(key[0]);
+            var columnNumber = int.Parse(key.Substring(1)) - 1;
+
+            return Cells[rowNumber, columnNumber];
         }
 
         private IEnumerable<SpreadsheetCell> SpreadsheetCells()

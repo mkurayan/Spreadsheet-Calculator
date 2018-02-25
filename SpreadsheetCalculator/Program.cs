@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using SpreadsheetCalculator.Exceptions;
-using SpreadsheetCalculator.RPN;
+using SpreadsheetCalculator.ExpressionEvaluator;
 
 namespace SpreadsheetCalculator
 {
@@ -20,7 +20,7 @@ namespace SpreadsheetCalculator
 
             try
             {
-                spreadsheet.Calculate(new RpnCalculator());
+                spreadsheet.Calculate(new RpnEvaluator());
             }
             catch (CyclicDependencyException ex)
             {

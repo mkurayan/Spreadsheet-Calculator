@@ -33,7 +33,7 @@ namespace SpreadsheetCalculator
             {
                 for (var columnNumber = 0; columnNumber < spreadsheet.ColumnNumber; columnNumber++)
                 {
-                    var value = spreadsheet.Cells[rowNumber, columnNumber].GetCellValue();
+                    var value = spreadsheet.Cells[rowNumber, columnNumber].CalculatedValue;
                     var output = "";
 
                     if (value.HasValue)
