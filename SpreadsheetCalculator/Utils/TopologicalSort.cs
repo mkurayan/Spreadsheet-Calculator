@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using SpreadsheetCalculator.Exceptions;
+using System.Runtime.CompilerServices;
+[assembly: InternalsVisibleTo("SpreadsheetCalculator.Tests")]
 
 namespace SpreadsheetCalculator.Utils
 {
     /// <summary>
     /// Use depth-first search algorithm in order to sort items.
     /// </summary>
-    public static class TopologicalSort
+    static class TopologicalSort
     {
         public static IList<T> Sort<T>(IEnumerable<T> source, Func<T, IEnumerable<T>> getDependencies)
         {
