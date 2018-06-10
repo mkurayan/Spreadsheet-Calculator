@@ -39,7 +39,41 @@ namespace SpreadsheetCalculator.Tests
         }
 
         [Fact]
-        public void Sort_DirectedGraph_SortedNodes()
+        public void Sort_EmptyGrapgh_GrapghRemainsEmpty()
+        {
+            var emptyGrapgh = new Node[0];
+
+            Assert.Equal(0, TopologicalSort.Sort(emptyGrapgh, item => item.Dependencies).Count);
+        }
+
+        [Fact]
+        public void Sort_DirectedGraphWithoutEdges_NothingToSort()
+        {
+            var a = new Node("A");
+            var b = new Node("B");
+            var c = new Node("C");
+
+            var graphWithoutEdges = new[] { a, b, c };
+
+            Assert.Equal(graphWithoutEdges, TopologicalSort.Sort(graphWithoutEdges, item => item.Dependencies));
+        }
+
+        [Fact]
+        public void Sort_TrivialDirectedGraph_GrapthSorted()
+        {
+            var a = new Node("A");
+            var b = new Node("B", a);
+            var c = new Node("C", b);
+            var d = new Node("D", c);
+
+            var unsorted = new[] { d, c, b, a };
+            var expected = new[] { a, b, c, d };
+
+            Assert.Equal(expected, TopologicalSort.Sort(unsorted, item => item.Dependencies));
+        }
+
+        [Fact]
+        public void Sort_DirectedGraph_GrapthSorted()
         {
             var a = new Node("A");
             var c = new Node("C");
