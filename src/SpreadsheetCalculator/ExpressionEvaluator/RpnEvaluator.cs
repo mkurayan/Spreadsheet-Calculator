@@ -49,5 +49,53 @@ namespace SpreadsheetCalculator.ExpressionEvaluator
 
             return stack.Pop();
         }
+
+        public bool IsValid(IEnumerable<string> rpnTokens)
+        {
+            int counter = 0;
+
+            foreach (var token in rpnTokens)
+            {
+                switch (token)
+                {
+                    case "*":
+                    case "/":
+                    case "+":
+                    case "-":
+                        if (counter < 2)
+                        {
+                            //The previous two tokens must be a values.
+                            return false;
+                        }
+                       
+                        counter--;
+                        break;
+                    case "--":
+                    case "++":
+                        if (counter < 1)
+                        {
+                            //Previous token must be a value.
+                            return false;
+                        }
+
+                        break;
+                    default:
+                        if (Double.TryParse(token, out double n))
+                        {
+                            counter++;
+                        }
+                        else
+                        {
+                            //Unknown symbol.
+                            return false;
+                        }
+
+                        break;
+                }
+            }
+
+            // If expression is valid, result counter must be equal to 1.
+            return counter == 1;
+        }
     }
 }

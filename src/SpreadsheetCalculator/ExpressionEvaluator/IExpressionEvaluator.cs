@@ -8,6 +8,14 @@ namespace SpreadsheetCalculator.ExpressionEvaluator
         /// Evaluate expression.
         /// </summary>
         /// <param name="tokens">Expression tokens.</param>
+        /// <returns>Calculated value.</returns>
         double Evaluate(IEnumerable<string> tokens);
+
+        /// <summary>
+        /// Check if expression is valid.
+        /// </summary>
+        /// <param name="tokens">Expression tokens.</param>
+        /// <returns>Validation result.</returns>
+        bool IsValid(IEnumerable<string> tokens);
     }
 }
