@@ -1,25 +1,22 @@
-﻿using System.Collections.Generic;
-using SpreadsheetCalculator.SpreadsheetCellToken;
-using SpreadsheetCalculator.Utils;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
+using SpreadsheetCalculator.ExpressionEvaluator;
 
 namespace SpreadsheetCalculator
 {
     /// <summary>
-    /// Represent a cell in the spreadsheet.
+    /// Concrete cell in the spreadsheet.
     /// </summary>
     class SpreadsheetCell
     {
         /// <summary>
-        /// Key of SpreadsheetCell.
-        /// </summary>
-        public string Key { get; }
-
-        /// <summary>
         /// Calculated cell value.
         /// </summary>
-        public double? CalculatedValue { get; set; }
+        public double? CalculatedValue { get; private set; }
 
-        private List<Token> _tokens;
+        private IEnumerable<Token> _tokens;
 
         /// <summary>
         /// Create new SpreadsheetCell.
@@ -27,26 +24,54 @@ namespace SpreadsheetCalculator
         /// <param name="rowNumber">Cell row number.</param>
         /// <param name="columnNumber">Cell column number.</param>
         /// <param name="value">Cell value.</param>
-        public SpreadsheetCell(int rowNumber, int columnNumber, string value)
+        public SpreadsheetCell(string value)
         {
-            Key = string.Format("{0}{1}", AlphabeticHelper.IntToLetter(rowNumber), columnNumber + 1);
-
-            _tokens = new List<Token>();
-            foreach (var t in value.Split(" "))
-            {
-                var token = TokenFactory.ParseToken(t);
-
-                _tokens.Add(token);
-            }
+            _tokens = value.Split(" ")
+                .Select(t => new Token(t))
+                .ToList();
         }
 
-        public IEnumerable<Token> GetTokens()
+        public IEnumerable<string> GetCellDependencies()
         {
-            foreach (Token t in _tokens)
+            return _tokens
+                .Where(t => t.IsCellReference)
+                .Select(t => t.Value);
+        }
+
+        public void CalculateCell(IExpressionEvaluator calculator, Func<string, double?> cellDependenciesResolver)
+        {
+            var strTokens = _tokens.Select(token =>
             {
-                yield return t;
-              
+                if (token.IsCellReference)
+                {
+                    return cellDependenciesResolver(token.Value).ToString();
+                }
+                else
+                {
+                    return token.Value;
+                }
+            });
+
+            CalculatedValue = calculator.Evaluate(strTokens);
+        }
+  
+        /// <summary>
+        /// Represent single token in spreadsheet cell.
+        /// </summary>
+        class Token
+        {
+            // This pattern check if token is reference to another cell in spreadsheet.
+            private static readonly Regex CellReferencePattern = new Regex(@"^[A-Z]\d+$");
+
+            public string Value { get; }
+
+            public bool IsCellReference { get; }
+
+            public Token(string token)
+            {
+                Value = token;
+                IsCellReference = CellReferencePattern.IsMatch(token);
             }
-        }       
+        }
     }
 }

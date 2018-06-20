@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using SpreadsheetCalculator.ExpressionEvaluator;
-using SpreadsheetCalculator.SpreadsheetCellToken;
 using SpreadsheetCalculator.Utils;
 
 namespace SpreadsheetCalculator
@@ -47,7 +46,7 @@ namespace SpreadsheetCalculator
         /// <param name="value">Cell value.</param>
         public void SetCell(int rowNumber, int columnNumber, string value)
         {
-            Cells[rowNumber, columnNumber] = new SpreadsheetCell(rowNumber, columnNumber, value);
+            Cells[rowNumber, columnNumber] = new SpreadsheetCell(value);
         }
 
         /// <summary>
@@ -57,26 +56,13 @@ namespace SpreadsheetCalculator
         {
             var sortedCells = TopologicalSort.Sort(
                 SpreadsheetCells(), 
-                cell => cell.GetTokens()
-                    .Where(token => token.Type == TokenType.Reference)
-                    .Select(cellRefToken => GetCell(cellRefToken.Value))
+                cell => cell.GetCellDependencies()
+                    .Select(cellRef => GetCell(cellRef))
             );
 
             foreach (var cell in sortedCells)
             {
-                var strTokens = cell.GetTokens().Select(token =>
-                {
-                    if (token.Type == TokenType.Reference)
-                    {
-                        return GetCell(token.Value).CalculatedValue.ToString();
-                    }
-                    else
-                    {
-                        return token.Value;
-                    }
-                });
-
-                cell.CalculatedValue = calculator.Evaluate(strTokens);
+                cell.CalculateCell(calculator, cellRef => GetCell(cellRef).CalculatedValue);
             }
         }
 
@@ -87,7 +73,9 @@ namespace SpreadsheetCalculator
         /// <returns></returns>
         private SpreadsheetCell GetCell(string key)
         {
-            var rowNumber = AlphabeticHelper.LetterToInt(key[0]);
+            // Convert alphabetic character to index.
+            var rowNumber = key[0] - 65;
+
             var columnNumber = int.Parse(key.Substring(1)) - 1;
 
             return Cells[rowNumber, columnNumber];
