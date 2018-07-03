@@ -50,7 +50,7 @@ namespace SpreadsheetCalculator.ExpressionEvaluator
             return stack.Pop();
         }
 
-        public bool IsValid(IEnumerable<string> rpnTokens)
+        public bool VaildateExpression(IEnumerable<string> rpnTokens)
         {
             int counter = 0;
 

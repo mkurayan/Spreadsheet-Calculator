@@ -20,7 +20,7 @@ namespace SpreadsheetCalculator
 
             try
             {
-                spreadsheet.Calculate(new RpnEvaluator());
+                spreadsheet.Calculate();
             }
             catch (CyclicDependencyException ex)
             {

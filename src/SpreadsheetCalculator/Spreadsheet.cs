@@ -25,15 +25,24 @@ namespace SpreadsheetCalculator
         /// </summary>
         public SpreadsheetCell[,] Cells { get; }
 
+
+        /// <summary>
+        /// Spreadsheet cell evaluator.
+        /// </summary>
+        private IExpressionEvaluator expressionEvaluator;
+
         /// <summary>
         /// Create new Spreadsheet. 
         /// </summary>
         /// <param name="rowNumber">Spreadsheet rows count.</param>
         /// <param name="columnNumber">Spreadsheet columns count.</param>
-        public Spreadsheet(int rowNumber, int columnNumber)
+        /// <param name="evaluator">Spreadsheet cell evaluator.</param>
+        public Spreadsheet(int rowNumber, int columnNumber, IExpressionEvaluator evaluator)
         {
             RowNumber = rowNumber;
             ColumnNumber = columnNumber;
+
+            expressionEvaluator = evaluator;
 
             Cells = new SpreadsheetCell[rowNumber, columnNumber];
         }
@@ -52,7 +61,7 @@ namespace SpreadsheetCalculator
         /// <summary>
         /// Process Spreadsheet data.
         /// </summary>
-        public void Calculate(IExpressionEvaluator calculator)
+        public void Calculate()
         {
             var sortedCells = TopologicalSort.Sort(
                 SpreadsheetCells(), 
@@ -62,7 +71,13 @@ namespace SpreadsheetCalculator
 
             foreach (var cell in sortedCells)
             {
-                cell.CalculateCell(calculator, cellRef => GetCell(cellRef).CalculatedValue);
+                var cellDependencies =  cell.GetCellDependencies()
+                    .ToDictionary(cellRef => cellRef, cellRef => GetCell(cellRef));
+
+                if (cell.ValidateCell(expressionEvaluator, cellDependencies))
+                {
+                    cell.CalculateCell(expressionEvaluator, cellDependencies);
+                }
             }
         }
 
@@ -77,6 +92,12 @@ namespace SpreadsheetCalculator
             var rowNumber = key[0] - 65;
 
             var columnNumber = int.Parse(key.Substring(1)) - 1;
+
+            // Check boundaries.
+            if (rowNumber >= RowNumber || columnNumber >= ColumnNumber)
+            {
+                return null;
+            }
 
             return Cells[rowNumber, columnNumber];
         }

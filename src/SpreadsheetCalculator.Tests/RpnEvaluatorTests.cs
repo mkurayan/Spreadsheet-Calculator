@@ -17,7 +17,7 @@ namespace SpreadsheetCalculator.Tests
         {
             var tokens = new string[] { "1" };
 
-            Assert.True(evaluator.IsValid(tokens));
+            Assert.True(evaluator.VaildateExpression(tokens));
 
             Assert.Equal(1, evaluator.Evaluate(tokens));
         }
@@ -31,7 +31,7 @@ namespace SpreadsheetCalculator.Tests
         {
             var tokens = expression.Split(" ");
 
-            Assert.True(evaluator.IsValid(tokens));
+            Assert.True(evaluator.VaildateExpression(tokens));
 
             Assert.Equal(expectedValue, evaluator.Evaluate(tokens));
         }
@@ -43,7 +43,7 @@ namespace SpreadsheetCalculator.Tests
         {
             var tokens = expression.Split(" ");
 
-            Assert.True(evaluator.IsValid(tokens));
+            Assert.True(evaluator.VaildateExpression(tokens));
 
             Assert.Equal(expectedValue, evaluator.Evaluate(tokens));
         }
@@ -55,7 +55,7 @@ namespace SpreadsheetCalculator.Tests
         {
             var tokens = expression.Split(" ");
 
-            Assert.True(evaluator.IsValid(tokens));
+            Assert.True(evaluator.VaildateExpression(tokens));
 
             Assert.Equal(expectedValue, evaluator.Evaluate(tokens));
         }
@@ -85,7 +85,7 @@ namespace SpreadsheetCalculator.Tests
         {
             var tokens = invalidExpression.Split(" ");
 
-            Assert.False(evaluator.IsValid(tokens));
+            Assert.False(evaluator.VaildateExpression(tokens));
         }
 
         [Theory]
@@ -97,7 +97,7 @@ namespace SpreadsheetCalculator.Tests
         {
             var tokens = invalidExpression.Split(" ");
 
-            Assert.False(evaluator.IsValid(tokens));
+            Assert.False(evaluator.VaildateExpression(tokens));
         }
 
         [Theory]
@@ -108,7 +108,7 @@ namespace SpreadsheetCalculator.Tests
         {
             var tokens = invalidExpression.Split(" ");
 
-            Assert.False(evaluator.IsValid(tokens));
+            Assert.False(evaluator.VaildateExpression(tokens));
         }
 
         [Theory]
@@ -118,7 +118,7 @@ namespace SpreadsheetCalculator.Tests
         {
             var tokens = invalidExpression.Split(" ");
 
-            Assert.False(evaluator.IsValid(tokens));
+            Assert.False(evaluator.VaildateExpression(tokens));
         }
     }
 }

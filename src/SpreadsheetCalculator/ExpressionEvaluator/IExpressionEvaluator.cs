@@ -16,6 +16,6 @@ namespace SpreadsheetCalculator.ExpressionEvaluator
         /// </summary>
         /// <param name="tokens">Expression tokens.</param>
         /// <returns>Validation result.</returns>
-        bool IsValid(IEnumerable<string> tokens);
+        bool VaildateExpression(IEnumerable<string> tokens);
     }
 }

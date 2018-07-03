@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SpreadsheetCalculator.ExpressionEvaluator;
+using System;
 using System.IO;
 using System.Linq;
 
@@ -36,7 +37,7 @@ namespace SpreadsheetCalculator
                 throw new ArgumentException("Spreadsheet size not provided or provided incorrectly.");
             }
 
-            var spreadsheet = new Spreadsheet(arr[1], arr[0]);
+            var spreadsheet = new Spreadsheet(arr[1], arr[0], new RpnEvaluator());
 
             for (var rowNumber = 0; rowNumber < spreadsheet.RowNumber; rowNumber++)
             {

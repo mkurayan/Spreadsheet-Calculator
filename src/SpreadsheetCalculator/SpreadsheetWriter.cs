@@ -33,15 +33,7 @@ namespace SpreadsheetCalculator
             {
                 for (var columnNumber = 0; columnNumber < spreadsheet.ColumnNumber; columnNumber++)
                 {
-                    var value = spreadsheet.Cells[rowNumber, columnNumber].CalculatedValue;
-                    var output = "";
-
-                    if (value.HasValue)
-                    {
-                        output = value.Value.ToString("F5");
-                    }
-
-                    _tOut.WriteLine(output);
+                    _tOut.WriteLine(spreadsheet.Cells[rowNumber, columnNumber].ToString());
 
                 }
             }
