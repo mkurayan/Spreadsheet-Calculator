@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using SpreadsheetCalculator.Exceptions;
-using SpreadsheetCalculator.ExpressionEvaluator;
+using SpreadsheetCalculator.ExpressionCalculator;
 
 namespace SpreadsheetCalculator
 {

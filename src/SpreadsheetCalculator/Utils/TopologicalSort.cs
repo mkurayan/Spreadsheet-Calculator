@@ -11,6 +11,14 @@ namespace SpreadsheetCalculator.Utils
     /// </summary>
     static class TopologicalSort
     {
+        /// <summary>
+        /// Sorts the specified source.
+        /// </summary>
+        /// <typeparam name="T">Type of sorted elements.</typeparam>
+        /// <param name="source">Directed graph.</param>
+        /// <param name="getDependencies">Get dependencies for each node.</param>
+        /// <exception cref="CyclicDependencyException">Cyclic dependency found.</exception>
+        /// <returns>Topologically sorted list.</returns>
         public static IList<T> Sort<T>(IEnumerable<T> source, Func<T, IEnumerable<T>> getDependencies)
         {
             var sorted = new List<T>();

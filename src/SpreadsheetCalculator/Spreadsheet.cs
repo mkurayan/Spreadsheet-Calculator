@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
-using SpreadsheetCalculator.ExpressionEvaluator;
+using SpreadsheetCalculator.Cells;
+using SpreadsheetCalculator.ExpressionCalculator;
 using SpreadsheetCalculator.Utils;
 
 namespace SpreadsheetCalculator
@@ -10,6 +12,17 @@ namespace SpreadsheetCalculator
     /// </summary>
     class Spreadsheet
     {
+        /// <summary>
+        /// Define maximum possible row numbers in Spreadsheet.
+        /// </summary>
+        private const int MaxRowNumber = 1000000;
+
+        /// <summary>
+        /// Define maximum column numbers in Spreadsheet.
+        /// Currently it limited because for columns we use single letter [A-Z].
+        /// </summary>
+        private const int MaxColumnNumber = 26;
+
         /// <summary>
         /// Spreadsheet rows count.
         /// </summary>
@@ -23,13 +36,12 @@ namespace SpreadsheetCalculator
         /// <summary>
         /// Spreadsheet Cells.
         /// </summary>
-        public SpreadsheetCell[,] Cells { get; }
-
+        public ISpreadsheetCell[,] Cells { get; }
 
         /// <summary>
         /// Spreadsheet cell evaluator.
         /// </summary>
-        private IExpressionEvaluator expressionEvaluator;
+        private IExpressionCalculator ExpressionCalculator;
 
         /// <summary>
         /// Create new Spreadsheet. 
@@ -37,14 +49,24 @@ namespace SpreadsheetCalculator
         /// <param name="rowNumber">Spreadsheet rows count.</param>
         /// <param name="columnNumber">Spreadsheet columns count.</param>
         /// <param name="evaluator">Spreadsheet cell evaluator.</param>
-        public Spreadsheet(int rowNumber, int columnNumber, IExpressionEvaluator evaluator)
+        public Spreadsheet(int rowNumber, int columnNumber, IExpressionCalculator calculator)
         {
+            if (rowNumber > MaxRowNumber)
+            {
+                throw new ArgumentException("Exceeded the maximum row number. ");
+            }
+
+            if (columnNumber > MaxColumnNumber)
+            {
+                throw new ArgumentException("Exceeded the maximum column number. ");
+            }
+
             RowNumber = rowNumber;
             ColumnNumber = columnNumber;
 
-            expressionEvaluator = evaluator;
+            ExpressionCalculator = calculator;
 
-            Cells = new SpreadsheetCell[rowNumber, columnNumber];
+            Cells = new ISpreadsheetCell[rowNumber, columnNumber];
         }
 
         /// <summary>
@@ -64,51 +86,128 @@ namespace SpreadsheetCalculator
         public void Calculate()
         {
             var sortedCells = TopologicalSort.Sort(
-                SpreadsheetCells(), 
-                cell => cell.GetCellDependencies()
-                    .Select(cellRef => GetCell(cellRef))
+                SpreadsheetCells(),
+                cell => cell.CellDependencies
+                    .Select(cellRef => GetCellByKey(cellRef.Value))
+                    .Where(reff => reff != null)
             );
 
             foreach (var cell in sortedCells)
             {
-                var cellDependencies =  cell.GetCellDependencies()
-                    .ToDictionary(cellRef => cellRef, cellRef => GetCell(cellRef));
+                // Check dependencies state.
+                var reffSummary = GetCellReferencesSummaryState(cell);
 
-                if (cell.ValidateCell(expressionEvaluator, cellDependencies))
+                if (reffSummary == CellState.Fulfilled)
                 {
-                    cell.CalculateCell(expressionEvaluator, cellDependencies);
+                    CalculateCell(cell);
+                }
+                else
+                {
+                    cell.SetError(reffSummary);
                 }
             }
         }
 
-        /// <summary>
-        /// Get SpreadsheetCell by Key.
-        /// </summary>
-        /// <param name="key">Key of SpreadsheetCell</param>
-        /// <returns></returns>
-        private SpreadsheetCell GetCell(string key)
+        private static bool IsInRange(int target, int start, int end)
         {
-            // Convert alphabetic character to index.
-            var rowNumber = key[0] - 65;
-
-            var columnNumber = int.Parse(key.Substring(1)) - 1;
-
-            // Check boundaries.
-            if (rowNumber >= RowNumber || columnNumber >= ColumnNumber)
-            {
-                return null;
-            }
-
-            return Cells[rowNumber, columnNumber];
+            return target >= start && target <= end;
         }
 
-        private IEnumerable<SpreadsheetCell> SpreadsheetCells()
+        private ISpreadsheetCell GetCellByKey(string key)
+        {
+            // Convert alphabetic character to index.
+            int rowNumber = key[0] - 65;
+
+            if (int.TryParse(key.Substring(1), out int columnNumber))
+            {
+                // Check boundaries.
+                if (IsInRange(rowNumber, 0, RowNumber) && IsInRange(columnNumber, 0, ColumnNumber))
+                {
+                    return Cells[rowNumber, columnNumber];
+                }
+            }
+
+            return null;
+        }
+
+        private IEnumerable<ISpreadsheetCell> SpreadsheetCells()
         {
             for (int x = 0; x < RowNumber; x++)
             {
                 for (int y = 0; y < ColumnNumber; y++)
                 {
                     yield return Cells[x, y];
+                }
+            }
+        }
+
+        private CellState GetCellReferencesSummaryState(ISpreadsheetCell cell)
+        {
+            foreach (CellToken cellReff in cell.CellDependencies)
+            {
+                var reff = GetCellByKey(cellReff.Value);
+
+                if (reff == null)
+                {
+                    // Reference to not existed cell.
+                    return CellState.ValueError;
+                }
+                else if (reff.CellState != CellState.Fulfilled)
+                {
+                    return reff.CellState;
+                }
+            }
+
+            return CellState.Fulfilled;
+        }
+
+        private void CalculateCell(ISpreadsheetCell cell)
+        {
+            if (cell.IsEmpty)
+            {
+                cell.SetValue(0);
+            }
+            else
+            {
+                var cellTokens = cell.CellTokens.Select(token =>
+                {
+                    if (token.IsCellReference)
+                    {
+                        var reff = GetCellByKey(token.Value);
+
+                        if (reff.CellState == CellState.Fulfilled)
+                        {
+                            return reff.ToString();
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException($"Cell reference is in invalid state: {reff.CellState}");
+                        }
+                    }
+                    else
+                    {
+                        return token.Value;
+                    }
+                });
+
+                if (ExpressionCalculator.Vaildate(cellTokens))
+                {
+                    try
+                    {
+                        double calculatedValue = ExpressionCalculator.Calculate(cellTokens);
+                    }
+                    catch (DivideByZeroException)
+                    {
+                        cell.SetError(CellState.DivideByZeroError);
+                    }
+                    catch (OverflowException)
+                    {
+                        cell.SetError(CellState.NumberError);
+                    }
+                }
+                else
+                {
+                    cell.SetError(CellState.ValueError);
                 }
             }
         }

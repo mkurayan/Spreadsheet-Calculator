@@ -1,15 +1,15 @@
-﻿using SpreadsheetCalculator.ExpressionEvaluator;
+﻿using SpreadsheetCalculator.ExpressionCalculator;
 using Xunit;
 
 namespace SpreadsheetCalculator.Tests
 {
-    public class RpnEvaluatorTests
+    public class RpnCalculatorTests
     {
-        RpnEvaluator evaluator;
+        RpnCalculator evaluator;
 
-        public RpnEvaluatorTests()
+        public RpnCalculatorTests()
         {
-            evaluator = new RpnEvaluator();
+            evaluator = new RpnCalculator();
         }
 
         [Fact]
@@ -17,9 +17,9 @@ namespace SpreadsheetCalculator.Tests
         {
             var tokens = new string[] { "1" };
 
-            Assert.True(evaluator.VaildateExpression(tokens));
+            Assert.True(evaluator.Vaildate(tokens));
 
-            Assert.Equal(1, evaluator.Evaluate(tokens));
+            Assert.Equal(1, evaluator.Calculate(tokens));
         }
 
         [Theory]
@@ -31,9 +31,9 @@ namespace SpreadsheetCalculator.Tests
         {
             var tokens = expression.Split(" ");
 
-            Assert.True(evaluator.VaildateExpression(tokens));
+            Assert.True(evaluator.Vaildate(tokens));
 
-            Assert.Equal(expectedValue, evaluator.Evaluate(tokens));
+            Assert.Equal(expectedValue, evaluator.Calculate(tokens));
         }
 
         [Theory]
@@ -43,9 +43,9 @@ namespace SpreadsheetCalculator.Tests
         {
             var tokens = expression.Split(" ");
 
-            Assert.True(evaluator.VaildateExpression(tokens));
+            Assert.True(evaluator.Vaildate(tokens));
 
-            Assert.Equal(expectedValue, evaluator.Evaluate(tokens));
+            Assert.Equal(expectedValue, evaluator.Calculate(tokens));
         }
 
         [Theory]
@@ -55,9 +55,9 @@ namespace SpreadsheetCalculator.Tests
         {
             var tokens = expression.Split(" ");
 
-            Assert.True(evaluator.VaildateExpression(tokens));
+            Assert.True(evaluator.Vaildate(tokens));
 
-            Assert.Equal(expectedValue, evaluator.Evaluate(tokens));
+            Assert.Equal(expectedValue, evaluator.Calculate(tokens));
         }
 
         [Theory]
@@ -85,7 +85,7 @@ namespace SpreadsheetCalculator.Tests
         {
             var tokens = invalidExpression.Split(" ");
 
-            Assert.False(evaluator.VaildateExpression(tokens));
+            Assert.False(evaluator.Vaildate(tokens));
         }
 
         [Theory]
@@ -97,7 +97,7 @@ namespace SpreadsheetCalculator.Tests
         {
             var tokens = invalidExpression.Split(" ");
 
-            Assert.False(evaluator.VaildateExpression(tokens));
+            Assert.False(evaluator.Vaildate(tokens));
         }
 
         [Theory]
@@ -108,7 +108,7 @@ namespace SpreadsheetCalculator.Tests
         {
             var tokens = invalidExpression.Split(" ");
 
-            Assert.False(evaluator.VaildateExpression(tokens));
+            Assert.False(evaluator.Vaildate(tokens));
         }
 
         [Theory]
@@ -118,7 +118,7 @@ namespace SpreadsheetCalculator.Tests
         {
             var tokens = invalidExpression.Split(" ");
 
-            Assert.False(evaluator.VaildateExpression(tokens));
+            Assert.False(evaluator.Vaildate(tokens));
         }
     }
 }

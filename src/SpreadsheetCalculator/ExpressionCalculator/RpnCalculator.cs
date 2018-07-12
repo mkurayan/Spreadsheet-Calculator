@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("SpreadsheetCalculator.Tests")]
 
-namespace SpreadsheetCalculator.ExpressionEvaluator
+namespace SpreadsheetCalculator.ExpressionCalculator
 {
     /// <summary>
     /// Evaluates expressions in RPN (Reverse Polish Notation)
     /// </summary>
-    class RpnEvaluator : IExpressionEvaluator
+    class RpnCalculator : IExpressionCalculator
     {
-        public double Evaluate(IEnumerable<string> rpnTokens)
+        public double Calculate(IEnumerable<string> rpnTokens)
         {
             Stack<double> stack = new Stack<double>();
            
@@ -50,7 +50,7 @@ namespace SpreadsheetCalculator.ExpressionEvaluator
             return stack.Pop();
         }
 
-        public bool VaildateExpression(IEnumerable<string> rpnTokens)
+        public bool Vaildate(IEnumerable<string> rpnTokens)
         {
             int counter = 0;
 
