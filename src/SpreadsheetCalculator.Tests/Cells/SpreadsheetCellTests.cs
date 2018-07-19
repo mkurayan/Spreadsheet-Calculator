@@ -72,7 +72,7 @@ namespace SpreadsheetCalculator.Tests
         }
 
         [Fact]
-        public void SetValue_CalculatedValue_CellInFulfilledState()
+        public void SetValue_ValidValue_CellInFulfilledState()
         {
             SpreadsheetCell cell = new SpreadsheetCell("1 1 +");
 
@@ -84,9 +84,22 @@ namespace SpreadsheetCalculator.Tests
         }
 
         [Theory]
+        [InlineData(double.NaN)]
+        [InlineData(double.PositiveInfinity)]
+        [InlineData(double.NegativeInfinity)]
+        public void SetValue_InvalidValue_CellInErrorState(double value)
+        {
+            SpreadsheetCell cell = new SpreadsheetCell("");
+
+            cell.SetValue(value);
+
+            Assert.Equal(CellState.NumberError, cell.CellState);
+        }
+
+
+        [Theory]
         [InlineData(CellState.ValueError, "#VALUE!")]
         [InlineData(CellState.NumberError, "#NUM!")]
-        [InlineData(CellState.DivideByZeroError, "#DIV/0!")]
         public void SetError_CellErrorState_CellInErorrState(CellState errorState, string expectedOutput)
         {
             SpreadsheetCell cell = new SpreadsheetCell("");

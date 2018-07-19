@@ -33,8 +33,7 @@ namespace SpreadsheetCalculator
             {
                 for (var columnNumber = 0; columnNumber < spreadsheet.ColumnNumber; columnNumber++)
                 {
-                    _tOut.WriteLine(spreadsheet.Cells[rowNumber, columnNumber].ToString());
-
+                    _tOut.WriteLine(spreadsheet.GetCell(rowNumber, columnNumber));
                 }
             }
         }

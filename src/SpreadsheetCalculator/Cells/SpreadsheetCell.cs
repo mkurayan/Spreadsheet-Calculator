@@ -58,8 +58,15 @@ namespace SpreadsheetCalculator.Cells
 
         public void SetValue(double value)
         {
-            CellState = CellState.Fulfilled;
-            calculatedValue = value;
+            if (Double.IsNaN(value) || Double.IsInfinity(value))
+            {
+                SetError(CellState.NumberError);
+            }
+            else
+            {
+                CellState = CellState.Fulfilled;
+                calculatedValue = value;
+            }
         }
 
         public void SetError(CellState state)
@@ -97,8 +104,6 @@ namespace SpreadsheetCalculator.Cells
                     }
                 case CellState.ValueError:
                     return "#VALUE!";
-                case CellState.DivideByZeroError:
-                    return "#DIV/0!";
                 case CellState.Pending:
                     return "#NOT_EVALUATED!";
                 case CellState.NumberError:

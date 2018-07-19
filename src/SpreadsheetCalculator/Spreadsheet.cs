@@ -36,7 +36,7 @@ namespace SpreadsheetCalculator
         /// <summary>
         /// Spreadsheet Cells.
         /// </summary>
-        public ISpreadsheetCell[,] Cells { get; }
+        private ISpreadsheetCell[,] Cells { get; }
 
         /// <summary>
         /// Spreadsheet cell evaluator.
@@ -51,20 +51,20 @@ namespace SpreadsheetCalculator
         /// <param name="evaluator">Spreadsheet cell evaluator.</param>
         public Spreadsheet(int rowNumber, int columnNumber, IExpressionCalculator calculator)
         {
-            if (rowNumber > MaxRowNumber)
+            if (!IsInRange(rowNumber, 1, MaxRowNumber))
             {
-                throw new ArgumentException("Exceeded the maximum row number. ");
+                throw new ArgumentException("Invalid row number.");
             }
 
-            if (columnNumber > MaxColumnNumber)
+            if (!IsInRange(columnNumber, 1, MaxColumnNumber))
             {
-                throw new ArgumentException("Exceeded the maximum column number. ");
+                throw new ArgumentException("Invalid column number.");
             }
 
             RowNumber = rowNumber;
             ColumnNumber = columnNumber;
 
-            ExpressionCalculator = calculator;
+            ExpressionCalculator = calculator ?? throw new ArgumentException("ExpressionCalculator is null.");
 
             Cells = new ISpreadsheetCell[rowNumber, columnNumber];
         }
@@ -79,6 +79,18 @@ namespace SpreadsheetCalculator
         {
             Cells[rowNumber, columnNumber] = new SpreadsheetCell(value);
         }
+
+        /// <summary>
+        /// Get concrete cell value from spreadsheet.
+        /// </summary>
+        /// <param name="rowNumber">Cell row number.</param>
+        /// <param name="columnNumber">Cell column number.</param>
+        /// <param name="value">Cell value.</param>
+        public string GetCell(int rowNumber, int columnNumber)
+        {
+            return Cells[rowNumber, columnNumber].ToString();
+        }
+
 
         /// <summary>
         /// Process Spreadsheet data.
@@ -192,18 +204,9 @@ namespace SpreadsheetCalculator
 
                 if (ExpressionCalculator.Vaildate(cellTokens))
                 {
-                    try
-                    {
-                        double calculatedValue = ExpressionCalculator.Calculate(cellTokens);
-                    }
-                    catch (DivideByZeroException)
-                    {
-                        cell.SetError(CellState.DivideByZeroError);
-                    }
-                    catch (OverflowException)
-                    {
-                        cell.SetError(CellState.NumberError);
-                    }
+                    double calculatedValue = ExpressionCalculator.Calculate(cellTokens);
+
+                    cell.SetValue(calculatedValue);
                 }
                 else
                 {

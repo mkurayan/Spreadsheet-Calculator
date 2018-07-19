@@ -1,7 +1,12 @@
 ﻿using System;
 using System.IO;
 using SpreadsheetCalculator.Exceptions;
-using SpreadsheetCalculator.ExpressionCalculator;
+
+//ToDo: 
+// 1. Add mock objects for unit tests. Example: Mock IExpressionCalculator for SpreadsheetTests.
+// 2. Thing about SetCell && GetCell validation in Spreadsheet class.
+// 3. ISpreadsheetCellFactory in order to inject SpreadsheetCell into Spreadsheet ?
+// 4. Spreadsheet cell "Pending" state, what if return original value if cell not calculated yet???
 
 namespace SpreadsheetCalculator
 {

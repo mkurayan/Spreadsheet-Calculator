@@ -18,18 +18,13 @@ namespace SpreadsheetCalculator.Cells
         Fulfilled,
 
         /// <summary>
-        /// In your formula a number is divided by zero.
-        /// </summary>
-        DivideByZeroError,
-
-        /// <summary>
         /// There's something wrong with the way your formula is typed. 
         /// Or, there's something wrong with the cells you are referencing." 
         /// </summary>
         ValueError,
 
         /// <summary>
-        /// Formula contains numeric values that aren’t valid.
+        /// Cell contains numeric values that aren’t valid.
         /// </summary>
         NumberError
     }
