@@ -1,5 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-[assembly: InternalsVisibleTo("SpreadsheetCalculator.Tests")]
 namespace SpreadsheetCalculator.Cells
 {
     /// <summary>

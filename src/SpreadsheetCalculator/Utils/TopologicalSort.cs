@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using SpreadsheetCalculator.Exceptions;
 using System.Runtime.CompilerServices;
-[assembly: InternalsVisibleTo("SpreadsheetCalculator.Tests")]
 
 namespace SpreadsheetCalculator.Utils
 {

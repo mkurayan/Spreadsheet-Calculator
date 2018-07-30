@@ -77,6 +77,8 @@ namespace SpreadsheetCalculator
         /// <param name="value">Cell value.</param>
         public void SetCell(int rowNumber, int columnNumber, string value)
         {
+            ValidateThatCellInSpreadsheet(rowNumber, columnNumber);
+
             Cells[rowNumber, columnNumber] = new SpreadsheetCell(value);
         }
 
@@ -88,9 +90,10 @@ namespace SpreadsheetCalculator
         /// <param name="value">Cell value.</param>
         public string GetCell(int rowNumber, int columnNumber)
         {
+            ValidateThatCellInSpreadsheet(rowNumber, columnNumber);
+
             return Cells[rowNumber, columnNumber].ToString();
         }
-
 
         /// <summary>
         /// Process Spreadsheet data.
@@ -212,6 +215,19 @@ namespace SpreadsheetCalculator
                 {
                     cell.SetError(CellState.ValueError);
                 }
+            }
+        }
+
+        private void ValidateThatCellInSpreadsheet(int rowNumber, int columnNumber)
+        {
+            if (!IsInRange(rowNumber, 0, RowNumber - 1))
+            {
+                throw new ArgumentException("Invalid row number.");
+            }
+
+            if (!IsInRange(columnNumber, 0, ColumnNumber - 1))
+            {
+                throw new ArgumentException("Invalid column number.");
             }
         }
     }

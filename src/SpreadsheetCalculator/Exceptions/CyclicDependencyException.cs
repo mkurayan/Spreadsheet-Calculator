@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-[assembly: InternalsVisibleTo("SpreadsheetCalculator.Tests")]
 
 namespace SpreadsheetCalculator.Exceptions
 {
