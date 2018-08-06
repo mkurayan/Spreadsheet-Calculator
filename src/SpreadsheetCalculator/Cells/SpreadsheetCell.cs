@@ -15,26 +15,23 @@ namespace SpreadsheetCalculator.Cells
         /// </summary>
         private double? calculatedValue;
 
+        /// <summary>
+        /// Original cell text.
+        /// </summary>
+        private readonly string cellText;
+
+        /// <summary>
+        /// Cell tokens which parsed from original cell text.
+        /// </summary>
+        private readonly Lazy<IEnumerable<CellToken>> cellTokens;
+
         public CellState CellState { get; private set; }
 
-        public bool IsEmpty
-        {
-            get
-            {
-                return !CellTokens.Any();
-            }
-        }
+        public bool IsEmpty => !cellTokens.Value.Any();
 
-        public IEnumerable<CellToken> CellTokens { get; private set; }
+        public IEnumerable<CellToken> CellDependencies => cellTokens.Value.Where(t => t.IsCellReference);
 
-        public IEnumerable<CellToken> CellDependencies
-        {
-            get
-            {
-                return CellTokens
-                    .Where(t => t.IsCellReference);
-            }
-        }
+        public IEnumerable<CellToken> CellTokens => cellTokens.Value;
 
         /// <summary>
         /// Create new SpreadsheetCell.
@@ -42,17 +39,16 @@ namespace SpreadsheetCalculator.Cells
         /// <param name="value">Cell value.</param>
         public SpreadsheetCell(string value)
         {
-            if (value == null)
-            {
-                throw new ArgumentNullException("value");
-            }
+            cellText = value ?? throw new ArgumentNullException("value");
+
+            cellTokens = new Lazy<IEnumerable<CellToken>>(
+               () => cellText.Split(" ")
+                      .Where(s => !string.IsNullOrWhiteSpace(s))
+                      .Select(t => new CellToken(t))
+                      .ToList()
+            );
 
             CellState = CellState.Pending;
-
-            CellTokens = value.Split(" ")
-                   .Where(s => !string.IsNullOrWhiteSpace(s))
-                   .Select(t => new CellToken(t))
-                   .ToList();
         }
 
         public void SetValue(double value)
@@ -92,10 +88,13 @@ namespace SpreadsheetCalculator.Cells
         {
             switch (CellState)
             {
+                case CellState.Pending:
+                    // If cell not processed yet, we return original cell value.
+                    return cellText;
                 case CellState.Fulfilled:
                     if (calculatedValue.HasValue)
                     {
-                        return calculatedValue.Value.ToString("F5");
+                        return calculatedValue.Value.ToString();
                     }
                     else
                     {
@@ -103,8 +102,6 @@ namespace SpreadsheetCalculator.Cells
                     }
                 case CellState.ValueError:
                     return "#VALUE!";
-                case CellState.Pending:
-                    return "#NOT_EVALUATED!";
                 case CellState.NumberError:
                     return "#NUM!";
                 default:

@@ -13,13 +13,13 @@ namespace SpreadsheetCalculator
     class Spreadsheet
     {
         /// <summary>
-        /// Define maximum possible row numbers in Spreadsheet.
+        /// Define maximum possible rows in Spreadsheet.
         /// </summary>
         private const int MaxRowNumber = 1000000;
 
         /// <summary>
-        /// Define maximum column numbers in Spreadsheet.
-        /// Currently it limited because for columns we use single letter [A-Z].
+        /// Define maximum possible columns in Spreadsheet.
+        /// Currently it limited because for columns we use only single letter [A-Z].
         /// </summary>
         private const int MaxColumnNumber = 26;
 
@@ -46,19 +46,19 @@ namespace SpreadsheetCalculator
         /// <summary>
         /// Create new Spreadsheet. 
         /// </summary>
-        /// <param name="rowNumber">Spreadsheet rows count.</param>
         /// <param name="columnNumber">Spreadsheet columns count.</param>
-        /// <param name="evaluator">Spreadsheet cell evaluator.</param>
-        public Spreadsheet(int rowNumber, int columnNumber, IExpressionCalculator calculator)
+        /// <param name="rowNumber">Spreadsheet rows count.</param>
+        /// <param name="calculator">Spreadsheet cell calculator.</param>
+        public Spreadsheet(int columnNumber, int rowNumber, IExpressionCalculator calculator)
         {
-            if (!IsInRange(rowNumber, 1, MaxRowNumber))
-            {
-                throw new ArgumentException("Invalid row number.");
-            }
-
             if (!IsInRange(columnNumber, 1, MaxColumnNumber))
             {
                 throw new ArgumentException("Invalid column number.");
+            }
+
+            if (!IsInRange(rowNumber, 1, MaxRowNumber))
+            {
+                throw new ArgumentException("Invalid row number.");
             }
 
             RowNumber = rowNumber;
@@ -66,7 +66,7 @@ namespace SpreadsheetCalculator
 
             ExpressionCalculator = calculator ?? throw new ArgumentException("ExpressionCalculator is null.");
 
-            Cells = new ISpreadsheetCell[rowNumber, columnNumber];
+            Cells = new ISpreadsheetCell[columnNumber, rowNumber];
         }
 
         /// <summary>
@@ -75,11 +75,14 @@ namespace SpreadsheetCalculator
         /// <param name="rowNumber">Cell row number.</param>
         /// <param name="columnNumber">Cell column number.</param>
         /// <param name="value">Cell value.</param>
-        public void SetCell(int rowNumber, int columnNumber, string value)
+        public void SetCell(int columnNumber, int rowNumber, string value)
         {
-            ValidateThatCellInSpreadsheet(rowNumber, columnNumber);
+            if (!IsCellInSpreadsheet(columnNumber, rowNumber))
+            {
+                throw new InvalidOperationException("Requested cell is out of spreadsheet.");
+            }
 
-            Cells[rowNumber, columnNumber] = new SpreadsheetCell(value);
+            Cells[columnNumber, rowNumber] = new SpreadsheetCell(value);
         }
 
         /// <summary>
@@ -88,11 +91,14 @@ namespace SpreadsheetCalculator
         /// <param name="rowNumber">Cell row number.</param>
         /// <param name="columnNumber">Cell column number.</param>
         /// <param name="value">Cell value.</param>
-        public string GetCell(int rowNumber, int columnNumber)
+        public string GetCell(int columnNumber, int rowNumber)
         {
-            ValidateThatCellInSpreadsheet(rowNumber, columnNumber);
+            if (!IsCellInSpreadsheet(columnNumber, rowNumber))
+            {
+                throw new InvalidOperationException("Requested cell is out of spreadsheet.");
+            }
 
-            return Cells[rowNumber, columnNumber].ToString();
+            return Cells[columnNumber, rowNumber].ToString();
         }
 
         /// <summary>
@@ -123,22 +129,28 @@ namespace SpreadsheetCalculator
             }
         }
 
-        private static bool IsInRange(int target, int start, int end)
-        {
-            return target >= start && target <= end;
-        }
-
+        /// <summary>
+        /// Get Spreadsheet cell by cell reference.
+        /// Convert cell reference to column & row indexes in spreadsheet inner array representation.
+        /// </summary>
+        /// <param name="key">Cell reference: A1, A2, etc...</param>
+        /// <returns></returns>
         private ISpreadsheetCell GetCellByKey(string key)
         {
             // Convert alphabetic character to index.
-            int rowNumber = key[0] - 65;
+            int colIndex = key[0] - 65;
 
-            if (int.TryParse(key.Substring(1), out int columnNumber))
+            // Check for Int32 overflow.
+            if (int.TryParse(key.Substring(1), out int rowIndex))
             {
-                // Check boundaries.
-                if (IsInRange(rowNumber, 0, RowNumber) && IsInRange(columnNumber, 0, ColumnNumber))
+                // For spreadsheet rows we begin numbering from one ( A1, A2, etc...)
+                // So, in order to translate it to spreadsheet inner array we subtract 1 from row number.
+                rowIndex--;
+
+                // Check that result column & row indexes is inside current spreadsheet
+                if (IsCellInSpreadsheet(colIndex, rowIndex))
                 {
-                    return Cells[rowNumber, columnNumber];
+                    return Cells[colIndex, rowIndex];
                 }
             }
 
@@ -147,11 +159,11 @@ namespace SpreadsheetCalculator
 
         private IEnumerable<ISpreadsheetCell> SpreadsheetCells()
         {
-            for (int x = 0; x < RowNumber; x++)
+            for (int col = 0; col < ColumnNumber; col++)
             {
-                for (int y = 0; y < ColumnNumber; y++)
+                for (int row = 0; row < RowNumber; row++)
                 {
-                    yield return Cells[x, y];
+                    yield return Cells[col, row];
                 }
             }
         }
@@ -218,17 +230,8 @@ namespace SpreadsheetCalculator
             }
         }
 
-        private void ValidateThatCellInSpreadsheet(int rowNumber, int columnNumber)
-        {
-            if (!IsInRange(rowNumber, 0, RowNumber - 1))
-            {
-                throw new ArgumentException("Invalid row number.");
-            }
+        private bool IsCellInSpreadsheet(int colIndex, int rowIndex) => IsInRange(colIndex, 0, ColumnNumber - 1) && IsInRange(rowIndex, 0, RowNumber - 1);
 
-            if (!IsInRange(columnNumber, 0, ColumnNumber - 1))
-            {
-                throw new ArgumentException("Invalid column number.");
-            }
-        }
+        private static bool IsInRange(int target, int start, int end) => target >= start && target <= end;
     }
 }

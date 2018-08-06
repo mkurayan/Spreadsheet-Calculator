@@ -34,4 +34,5 @@ using System.Runtime.InteropServices;
 
 // Add InternalsVisibleTo for unit tests.
 [assembly: InternalsVisibleTo("SpreadsheetCalculator.Tests")]
+[assembly: InternalsVisibleTo("SpreadsheetCalculator.IntegrationTests")]
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]

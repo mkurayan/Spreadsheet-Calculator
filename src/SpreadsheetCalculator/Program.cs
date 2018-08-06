@@ -2,10 +2,6 @@
 using System.IO;
 using SpreadsheetCalculator.Exceptions;
 
-//ToDo: 
-// 1. ISpreadsheetCellFactory in order to inject SpreadsheetCell into Spreadsheet ?
-// 2. Spreadsheet cell "Pending" state, what if return original value if cell not calculated yet???
-
 namespace SpreadsheetCalculator
 {
     class Program

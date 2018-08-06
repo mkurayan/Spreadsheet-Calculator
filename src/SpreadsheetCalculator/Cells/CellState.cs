@@ -1,5 +1,4 @@
-﻿using System.Runtime.CompilerServices;
-namespace SpreadsheetCalculator.Cells
+﻿namespace SpreadsheetCalculator.Cells
 {
     /// <summary>
     /// Describe inner SpreadsheetCell states.

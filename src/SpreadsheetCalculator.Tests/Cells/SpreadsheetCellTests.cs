@@ -18,11 +18,13 @@ namespace SpreadsheetCalculator.Tests
         [Fact]
         public void CreateNewSpreadsheetCell_MathExpression_CellCreatedInPendingState()
         {
-            SpreadsheetCell cell = new SpreadsheetCell(string.Empty);
+            var cellText = "raw text";
+
+            SpreadsheetCell cell = new SpreadsheetCell(cellText);
 
             Assert.Equal(CellState.Pending, cell.CellState);
 
-            Assert.Equal("#NOT_EVALUATED!", cell.ToString());
+            Assert.Equal(cellText, cell.ToString());
         }
 
         [Theory]
@@ -76,11 +78,13 @@ namespace SpreadsheetCalculator.Tests
         {
             SpreadsheetCell cell = new SpreadsheetCell("1 1 +");
 
-            cell.SetValue(2);
+            int value = 2;
+
+            cell.SetValue(value);
 
             Assert.Equal(CellState.Fulfilled, cell.CellState);
 
-            Assert.Equal("2.00000", cell.ToString());
+            Assert.Equal(value.ToString(), cell.ToString());
         }
 
         [Theory]

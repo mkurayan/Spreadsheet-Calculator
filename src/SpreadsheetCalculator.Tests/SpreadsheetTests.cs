@@ -23,7 +23,7 @@ namespace SpreadsheetCalculator.Tests
         [InlineData(1, 1000001)]
         public void SpreadsheetConstructor_InvalidSize_ThrowArgumentException(int rowNumber, int columnNumber)
         {
-            Assert.Throws<ArgumentException>(() => new Spreadsheet(rowNumber, columnNumber, ExpressionCalculatorMock.Object));
+            Assert.Throws<ArgumentException>(() => new Spreadsheet(columnNumber, rowNumber, ExpressionCalculatorMock.Object));
         }
 
         [Fact]
@@ -37,8 +37,8 @@ namespace SpreadsheetCalculator.Tests
         {
             var spreadsheet = new Spreadsheet(2, 3, ExpressionCalculatorMock.Object);
 
-            Assert.Equal(2, spreadsheet.RowNumber);
-            Assert.Equal(3, spreadsheet.ColumnNumber);
+            Assert.Equal(2, spreadsheet.ColumnNumber);
+            Assert.Equal(3, spreadsheet.RowNumber);
         }
 
         [Theory]
@@ -48,11 +48,11 @@ namespace SpreadsheetCalculator.Tests
         [InlineData(0, 1)]
         [InlineData(1, 0)]
         [InlineData(1, 1)]
-        public void GetCell_CellIsOutOfSpreadsheetBoundaries_ThrowArgumentException(int rowNumber, int columnNumber)
+        public void GetCell_CellIsOutOfSpreadsheetBoundaries_ThrowArgumentException(int columnNumber, int rowNumber)
         {
             var spreadsheet = new Spreadsheet(1, 1, ExpressionCalculatorMock.Object);
 
-            Assert.Throws<ArgumentException>(() => spreadsheet.GetCell(rowNumber, columnNumber));
+            Assert.Throws<InvalidOperationException>(() => spreadsheet.GetCell(rowNumber, columnNumber));
         }
 
         [Theory]
@@ -62,50 +62,50 @@ namespace SpreadsheetCalculator.Tests
         [InlineData(0, 1)]
         [InlineData(1, 0)]
         [InlineData(1, 1)]
-        public void SetCell_CellIsOutOfSpreadsheetBoundaries_ThrowArgumentException(int rowNumber, int columnNumber)
+        public void SetCell_CellIsOutOfSpreadsheetBoundaries_ThrowArgumentException(int columnNumber, int rowNumber)
         {
             var spreadsheet = new Spreadsheet(1, 1, ExpressionCalculatorMock.Object);
 
-            Assert.Throws<ArgumentException>(() => spreadsheet.SetCell(rowNumber, columnNumber, "x"));
+            Assert.Throws<InvalidOperationException>(() => spreadsheet.SetCell(rowNumber, columnNumber, "x"));
         }
 
         [Fact]
-        public void SetCell_CellValue_SpreadsheetHasCellValue()
+        public void SetCell_CellValue_GetOriginalValueFromSpreadsheet()
         {
             var spreadsheet = new Spreadsheet(1, 1, ExpressionCalculatorMock.Object);
 
-            var cellValue = "1"; ;
+            var cellValue = "dummy"; ;
 
             spreadsheet.SetCell(0, 0, cellValue);
 
             Assert.Equal(cellValue, spreadsheet.GetCell(0, 0));
         }
 
-        /*
         [Fact]
-        public void SetCell_CellValue_SpreadsheetCellHasValue()
+        public void SetAllCellsInSpreadsheet_CellValue_AllCellsHaveOriginalValues()
         {
             int columnNumber = 2;
             int rowNumber = 3;
 
-            var spreadsheet = new Spreadsheet(rowNumber, columnNumber, ExpressionCalculator);
+            string cellCoordinatesToString(int i, int j) => $"row: {i} column: {j}";
+
+            var spreadsheet = new Spreadsheet(rowNumber, columnNumber, ExpressionCalculatorMock.Object);
 
             for (int i = 0; i < rowNumber; i++)
             {
-                for (int j = 0; i < columnNumber; j++)
+                for (int j = 0; j < columnNumber; j++)
                 {
-                    spreadsheet.SetCell(i, j, $"row: {i} column: {j}");
+                    spreadsheet.SetCell(i, j, cellCoordinatesToString(i, j));
                 }
             }
 
             for (int i = 0; i < rowNumber; i++)
             {
-                for (int j = 0; i < columnNumber; j++)
+                for (int j = 0; j < columnNumber; j++)
                 {
-                    Assert.Equal($"row: {i} column: {j}", spreadsheet.GetCell(i, j));
+                    Assert.Equal(cellCoordinatesToString(i, j), spreadsheet.GetCell(i, j));
                 }
             }
         }
-        */
     }
 }

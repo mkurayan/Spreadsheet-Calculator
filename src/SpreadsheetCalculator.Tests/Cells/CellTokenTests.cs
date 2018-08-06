@@ -1,7 +1,4 @@
 ﻿using SpreadsheetCalculator.Cells;
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Xunit;
 
 namespace SpreadsheetCalculator.Tests.Cells
