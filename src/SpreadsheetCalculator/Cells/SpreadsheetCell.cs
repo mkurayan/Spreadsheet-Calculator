@@ -1,7 +1,7 @@
-﻿using System;
+﻿using SpreadsheetCalculator.Tokens;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 
 namespace SpreadsheetCalculator.Cells
 {
@@ -15,38 +15,22 @@ namespace SpreadsheetCalculator.Cells
         /// </summary>
         private double? calculatedValue;
 
-        /// <summary>
-        /// Original cell text.
-        /// </summary>
-        private readonly string cellText;
-
-        /// <summary>
-        /// Cell tokens which parsed from original cell text.
-        /// </summary>
-        private readonly Lazy<IEnumerable<CellToken>> cellTokens;
-
         public CellState CellState { get; private set; }
 
-        public bool IsEmpty => !cellTokens.Value.Any();
+        public bool IsEmpty => !CellTokens.Any();
 
-        public IEnumerable<CellToken> CellDependencies => cellTokens.Value.Where(t => t.IsCellReference);
+        public IEnumerable<Token> CellDependencies => CellTokens.Where(t => t.Type == TokenType.CellReference);
 
-        public IEnumerable<CellToken> CellTokens => cellTokens.Value;
+        public IEnumerable<Token> CellTokens { get; }
 
         /// <summary>
         /// Create new SpreadsheetCell.
         /// </summary>
         /// <param name="value">Cell value.</param>
-        public SpreadsheetCell(string value)
+        public SpreadsheetCell(IEnumerable<Token> tokens)
         {
-            cellText = value ?? throw new ArgumentNullException("value");
 
-            cellTokens = new Lazy<IEnumerable<CellToken>>(
-               () => cellText.Split(" ")
-                      .Where(s => !string.IsNullOrWhiteSpace(s))
-                      .Select(t => new CellToken(t))
-                      .ToList()
-            );
+            CellTokens = tokens ?? throw new ArgumentNullException("stringParser is null."); ;
 
             CellState = CellState.Pending;
         }
@@ -89,8 +73,7 @@ namespace SpreadsheetCalculator.Cells
             switch (CellState)
             {
                 case CellState.Pending:
-                    // If cell not processed yet, we return original cell value.
-                    return cellText;
+                    return "#PENDING!";
                 case CellState.Fulfilled:
                     if (calculatedValue.HasValue)
                     {

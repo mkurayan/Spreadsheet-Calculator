@@ -4,9 +4,9 @@ using System.Collections.Generic;
 namespace SpreadsheetCalculator.ExpressionCalculator
 {
     /// <summary>
-    /// Evaluates expressions in RPN (Reverse Polish Notation)
+    /// Evaluates expressions in postfix notation (Reverse Polish Notation).
     /// </summary>
-    class RpnCalculator : IExpressionCalculator
+    class PostfixNotationCalculator : IExpressionCalculator
     {
         public double Calculate(IEnumerable<string> rpnTokens)
         {
@@ -31,14 +31,14 @@ namespace SpreadsheetCalculator.ExpressionCalculator
                         number = stack.Pop();
                         stack.Push(stack.Pop() - number);
                         break;
-                    case "--":
-                        number = stack.Pop();
-                        stack.Push(--number);
-                        break;
-                    case "++":
-                        number = stack.Pop();
-                        stack.Push(++number);
-                        break;
+                    //case "--":
+                    //    number = stack.Pop();
+                    //    stack.Push(--number);
+                    //    break;
+                    //case "++":
+                    //    number = stack.Pop();
+                    //    stack.Push(++number);
+                    //    break;
                     default:
                         stack.Push(Double.Parse(token));
                         break;
@@ -68,15 +68,15 @@ namespace SpreadsheetCalculator.ExpressionCalculator
                        
                         counter--;
                         break;
-                    case "--":
-                    case "++":
-                        if (counter < 1)
-                        {
-                            //Previous token must be a value.
-                            return false;
-                        }
+                    //case "--":
+                    //case "++":
+                    //    if (counter < 1)
+                    //    {
+                    //        //Previous token must be a value.
+                    //        return false;
+                    //    }
 
-                        break;
+                    //    break;
                     default:
                         if (Double.TryParse(token, out double n))
                         {

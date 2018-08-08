@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SpreadsheetCalculator.Cells;
 using SpreadsheetCalculator.ExpressionCalculator;
+using SpreadsheetCalculator.Tokens;
 using SpreadsheetCalculator.Utils;
 
 namespace SpreadsheetCalculator
@@ -41,7 +42,12 @@ namespace SpreadsheetCalculator
         /// <summary>
         /// Spreadsheet cell evaluator.
         /// </summary>
-        private IExpressionCalculator ExpressionCalculator;
+        private IExpressionCalculator ExpressionCalculator { get; }
+
+        /// <summary>
+        /// Spreadsheet cell text parser.
+        /// </summary>
+        private IStringParser StringParser { get; }
 
         /// <summary>
         /// Create new Spreadsheet. 
@@ -49,7 +55,7 @@ namespace SpreadsheetCalculator
         /// <param name="columnNumber">Spreadsheet columns count.</param>
         /// <param name="rowNumber">Spreadsheet rows count.</param>
         /// <param name="calculator">Spreadsheet cell calculator.</param>
-        public Spreadsheet(int columnNumber, int rowNumber, IExpressionCalculator calculator)
+        public Spreadsheet(int columnNumber, int rowNumber, IExpressionCalculator calculator, IStringParser stringParser)
         {
             if (!IsInRange(columnNumber, 1, MaxColumnNumber))
             {
@@ -64,7 +70,9 @@ namespace SpreadsheetCalculator
             RowNumber = rowNumber;
             ColumnNumber = columnNumber;
 
-            ExpressionCalculator = calculator ?? throw new ArgumentException("ExpressionCalculator is null.");
+            ExpressionCalculator = calculator ?? throw new ArgumentNullException("ExpressionCalculator is null.");
+
+            StringParser = stringParser ?? throw new ArgumentNullException("stringParser is null.");
 
             Cells = new ISpreadsheetCell[columnNumber, rowNumber];
         }
@@ -82,7 +90,7 @@ namespace SpreadsheetCalculator
                 throw new InvalidOperationException("Requested cell is out of spreadsheet.");
             }
 
-            Cells[columnNumber, rowNumber] = new SpreadsheetCell(value);
+            Cells[columnNumber, rowNumber] = new SpreadsheetCell(StringParser.Parse(value));
         }
 
         /// <summary>
@@ -170,7 +178,7 @@ namespace SpreadsheetCalculator
 
         private CellState GetCellReferencesSummaryState(ISpreadsheetCell cell)
         {
-            foreach (CellToken cellReff in cell.CellDependencies)
+            foreach (Token cellReff in cell.CellDependencies)
             {
                 var reff = GetCellByKey(cellReff.Value);
 
@@ -198,7 +206,7 @@ namespace SpreadsheetCalculator
             {
                 var cellTokens = cell.CellTokens.Select(token =>
                 {
-                    if (token.IsCellReference)
+                    if (token.Type == TokenType.CellReference)
                     {
                         var reff = GetCellByKey(token.Value);
 

@@ -1,15 +1,26 @@
 ﻿using SpreadsheetCalculator.Exceptions;
 using SpreadsheetCalculator.ExpressionCalculator;
+using SpreadsheetCalculator.Tokens;
 using Xunit;
 
 namespace SpreadsheetCalculator.IntegrationTests
 {
     public class SpreadsheetTests
     {
+        PostfixNotationCalculator Calculator { get; }
+
+        StringParser Parser { get; }
+
+        public SpreadsheetTests()
+        {
+            Calculator = new PostfixNotationCalculator();
+            Parser = new StringParser();
+        }
+
         [Fact]
         public void Calculate_SpereadsheetWithoutCellReferences_AllCellsCalculated()
         {
-            var spreadsheet = new Spreadsheet(2, 3, new RpnCalculator());
+            var spreadsheet = new Spreadsheet(2, 3, Calculator, Parser);
 
             for (int row = 0; row < spreadsheet.RowNumber; row++)
             {
@@ -35,7 +46,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         [Fact]
         public void Calculate_SpereadsheetWithCellReferencesOnly_AllCellsCalculated()
         {
-            var spreadsheet = new Spreadsheet(3, 2, new RpnCalculator());
+            var spreadsheet = new Spreadsheet(3, 2, Calculator, Parser);
 
             /*
              *        A    |   B    |   C 
@@ -70,7 +81,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         [Fact]
         public void Calculate_TypicalSpereadsheet_AllCellsCalculated()
         {
-            var spreadsheet = new Spreadsheet(3, 2, new RpnCalculator());
+            var spreadsheet = new Spreadsheet(3, 2, Calculator, Parser);
 
             /*
              *        A         |   B    |   C 
@@ -106,12 +117,12 @@ namespace SpreadsheetCalculator.IntegrationTests
         [Fact]
         public void Calculate_SpereadsheetWithCircularReferences_ThrowCyclicDependencyException()
         {
-            var spreadsheet = new Spreadsheet(3, 1, new RpnCalculator());
+            var spreadsheet = new Spreadsheet(3, 1, Calculator, Parser);
 
             /*
              *    |  A   |  B  |   C 
              *    |______|_____|_______
-             *  1 |  C1  |  1  |  A1   <--- Circulal reference  
+             *  1 |  C1  |  1  |  A1   <--- Circular reference  
              */
 
             spreadsheet.SetCell(0, 0, "C1");
@@ -124,7 +135,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         [Fact]
         public void Calculate_InvalidCellReferenceInsSpereadsheet_ShowInvalidValueError()
         {
-            var spreadsheet = new Spreadsheet(3, 2, new RpnCalculator());
+            var spreadsheet = new Spreadsheet(3, 2, Calculator, Parser);
 
             /*
              *    |   A   |  B  |   C 
@@ -154,7 +165,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         [Fact]
         public void Calculate_SpereadsheetWithInvalidMathematicalOperation_ShowNumberError()
         {
-            var spreadsheet = new Spreadsheet(3, 1, new RpnCalculator());
+            var spreadsheet = new Spreadsheet(3, 1, Calculator, Parser);
 
             /*
              *    |  A   |    B    |  C 
@@ -176,7 +187,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         [Fact]
         public void Calculate_SpereadsheetWithInvalidDataInCell_ShowNumberError()
         {
-            var spreadsheet = new Spreadsheet(3, 2, new RpnCalculator());
+            var spreadsheet = new Spreadsheet(3, 2, Calculator, Parser);
 
             /*
              *    |    A   |    B    |    C      |
@@ -205,7 +216,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         [Fact]
         public void Calculate_SpereadsheetWithEmptyCell_CellsContainsDefaultValues() 
         {
-            var spreadsheet = new Spreadsheet(2, 1, new RpnCalculator());
+            var spreadsheet = new Spreadsheet(2, 1, Calculator, Parser);
 
             /*
              *    |  A  |  B   |   

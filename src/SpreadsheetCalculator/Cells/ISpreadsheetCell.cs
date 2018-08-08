@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using SpreadsheetCalculator.Tokens;
+using System.Collections.Generic;
 
 namespace SpreadsheetCalculator.Cells
 {
@@ -20,12 +21,12 @@ namespace SpreadsheetCalculator.Cells
         /// <summary>
         /// Parsed to tokens cell formula.
         /// </summary>
-        IEnumerable<CellToken> CellTokens { get; }
+        IEnumerable<Token> CellTokens { get; }
 
         /// <summary>
         /// Cell dependencies from parsed to tokens cell formula.
         /// </summary>
-        IEnumerable<CellToken> CellDependencies { get; }
+        IEnumerable<Token> CellDependencies { get; }
 
         /// <summary>
         /// Set calculated cell value.

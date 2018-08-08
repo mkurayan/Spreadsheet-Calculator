@@ -1,72 +1,55 @@
 ﻿using System.Linq;
 using Xunit;
 using SpreadsheetCalculator.Cells;
-using SpreadsheetCalculator.ExpressionCalculator;
 using System;
+using SpreadsheetCalculator.Tokens;
 
 namespace SpreadsheetCalculator.Tests
 {
     public class SpreadsheetCellTests
     {
-        IExpressionCalculator ExpressionCalculator;
-
-        public SpreadsheetCellTests()
-        {
-            ExpressionCalculator = new RpnCalculator();
-        }
-
         [Fact]
-        public void CreateNewSpreadsheetCell_MathExpression_CellCreatedInPendingState()
+        public void CreateNewSpreadsheetCell_WithAnyTokens_CellCreatedInPendingState()
         {
-            var cellText = "raw text";
-
-            SpreadsheetCell cell = new SpreadsheetCell(cellText);
+            SpreadsheetCell cell = new SpreadsheetCell(Enumerable.Empty<Token>());
 
             Assert.Equal(CellState.Pending, cell.CellState);
 
-            Assert.Equal(cellText, cell.ToString());
+            Assert.Equal("#PENDING!", cell.ToString());
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("    ")]
-        public void CreateNewSpreadsheetCell_EmptyString_EmptyCellCreated(string value)
+        [Fact]
+        public void CreateNewSpreadsheetCell_EmptyTokensList_EmptyCellCreated()
         {
-            SpreadsheetCell cell = new SpreadsheetCell(value);
+            SpreadsheetCell cell = new SpreadsheetCell(Enumerable.Empty<Token>());
 
             Assert.True(cell.IsEmpty);
         }
 
-        [Theory]
-        [InlineData("", 0)]
-        [InlineData("    ", 0)]
-        [InlineData("1", 1)]
-        [InlineData("11", 1)]
-        [InlineData("text", 1)]
-        [InlineData("a + b", 3)]
-        [InlineData("   a    +    b   ", 3)]
-        public void ParseExpressionToTokensl_ExpressionWithSeveralTokens_CorrectTokensCount(string value, int expectedTokenCount)
-        {
-            SpreadsheetCell cell = new SpreadsheetCell(value);
-
-            Assert.Equal(expectedTokenCount, cell.CellTokens.Count());
-        }
-
 
         [Fact]
-        public void ParseExpressionToTokens_MathExpressionWithoutCellReferences_ListOfTokensWithoutCellReferences()
+        public void ParseExpressionToTokens_TokensListWithoutCellReferences_ListOfTokensWithoutCellReferences()
         {
-            SpreadsheetCell cell = new SpreadsheetCell("1 1 +");
+            SpreadsheetCell cell = new SpreadsheetCell(new[] {
+                new Token(TokenType.Number, "1"),
+                new Token(TokenType.Operator, "+"),
+                new Token(TokenType.Parenthesis, "["),
+                new Token(TokenType.Unknown, "&?~")
+            });
 
             Assert.Empty(cell.CellDependencies);
 
-            Assert.Equal(3, cell.CellTokens.Count());
+            Assert.Equal(4, cell.CellTokens.Count());
         }
 
         [Fact]
-        public void ParseExpressionToTokens_MathExpressionWithCellReferences_ListOfTokensWithCellReferences()
+        public void ParseExpressionToTokens_TokensListWithCellReferences_ListOfTokensWithCellReferences()
         {
-            SpreadsheetCell cell = new SpreadsheetCell("A1 A2 +");
+            SpreadsheetCell cell = new SpreadsheetCell(new[] {
+                new Token(TokenType.CellReference, "A1"),
+                new Token(TokenType.Operator, "+"),
+                new Token(TokenType.CellReference, "A2")
+            });
 
             Assert.Equal(2, cell.CellDependencies.Count());
 
@@ -76,7 +59,7 @@ namespace SpreadsheetCalculator.Tests
         [Fact]
         public void SetValue_ValidValue_CellInFulfilledState()
         {
-            SpreadsheetCell cell = new SpreadsheetCell("1 1 +");
+            SpreadsheetCell cell = new SpreadsheetCell(Enumerable.Empty<Token>());
 
             int value = 2;
 
@@ -93,7 +76,7 @@ namespace SpreadsheetCalculator.Tests
         [InlineData(double.NegativeInfinity)]
         public void SetValue_InvalidValue_CellInErrorState(double value)
         {
-            SpreadsheetCell cell = new SpreadsheetCell("");
+            SpreadsheetCell cell = new SpreadsheetCell(Enumerable.Empty<Token>());
 
             cell.SetValue(value);
 
@@ -106,7 +89,7 @@ namespace SpreadsheetCalculator.Tests
         [InlineData(CellState.NumberError, "#NUM!")]
         public void SetError_CellErrorState_CellInErorrState(CellState errorState, string expectedOutput)
         {
-            SpreadsheetCell cell = new SpreadsheetCell("");
+            SpreadsheetCell cell = new SpreadsheetCell(Enumerable.Empty<Token>());
 
             cell.SetError(errorState);
 
@@ -120,7 +103,7 @@ namespace SpreadsheetCalculator.Tests
         [InlineData(CellState.Pending)]
         public void SetError_NonErrorState_InvalidOperationExceptionThrown(CellState nonErrorState)
         {
-            SpreadsheetCell cell = new SpreadsheetCell("A1 A2 +");
+            SpreadsheetCell cell = new SpreadsheetCell(Enumerable.Empty<Token>());
 
             Assert.Throws<InvalidOperationException>(() => cell.SetError(nonErrorState));
         }
