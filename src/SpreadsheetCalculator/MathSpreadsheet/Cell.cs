@@ -1,14 +1,14 @@
-﻿using SpreadsheetCalculator.Tokens;
+﻿using SpreadsheetCalculator.Parser;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SpreadsheetCalculator.Cells
+namespace SpreadsheetCalculator
 {
     /// <summary>
     /// Concrete cell in the spreadsheet.
     /// </summary>
-    class SpreadsheetCell : ISpreadsheetCell
+    class Cell : ICell
     {
         /// <summary>
         /// Calculated cell value.
@@ -27,10 +27,9 @@ namespace SpreadsheetCalculator.Cells
         /// Create new SpreadsheetCell.
         /// </summary>
         /// <param name="value">Cell value.</param>
-        public SpreadsheetCell(IEnumerable<Token> tokens)
+        public Cell(IEnumerable<Token> tokens)
         {
-
-            CellTokens = tokens ?? throw new ArgumentNullException("stringParser is null."); ;
+            CellTokens = tokens ?? throw new ArgumentNullException(nameof(tokens)); ;
 
             CellState = CellState.Pending;
         }

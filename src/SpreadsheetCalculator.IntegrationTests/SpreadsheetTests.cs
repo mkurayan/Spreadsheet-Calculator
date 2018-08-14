@@ -1,6 +1,6 @@
-﻿using SpreadsheetCalculator.Exceptions;
-using SpreadsheetCalculator.ExpressionCalculator;
-using SpreadsheetCalculator.Tokens;
+﻿using SpreadsheetCalculator.DirectedGraph;
+using SpreadsheetCalculator.Calculator;
+using SpreadsheetCalculator.Parser;
 using Xunit;
 
 namespace SpreadsheetCalculator.IntegrationTests
@@ -115,7 +115,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         }
 
         [Fact]
-        public void Calculate_SpereadsheetWithCircularReferences_ThrowCyclicDependencyException()
+        public void Calculate_SpereadsheetWithCircularReferences_ThrowSpreadsheetInternallException()
         {
             var spreadsheet = new Spreadsheet(3, 1, Calculator, Parser);
 
@@ -129,7 +129,7 @@ namespace SpreadsheetCalculator.IntegrationTests
             spreadsheet.SetCell(1, 0, "1");
             spreadsheet.SetCell(2, 0, "A1");
             
-            Assert.Throws<CyclicDependencyException>(() => spreadsheet.Calculate());
+            Assert.Throws<SpreadsheetInternallException>(() => spreadsheet.Calculate());
         }
 
         [Fact]
@@ -181,7 +181,7 @@ namespace SpreadsheetCalculator.IntegrationTests
 
             Assert.Equal("0", spreadsheet.GetCell(0, 0));
             Assert.Equal("#NUM!", spreadsheet.GetCell(1, 0));
-            Assert.Equal("#NUM!", spreadsheet.GetCell(2, 0));
+            Assert.Equal("#VALUE!", spreadsheet.GetCell(2, 0));
         }
 
         [Fact]

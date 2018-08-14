@@ -1,12 +1,12 @@
-﻿using SpreadsheetCalculator.Tokens;
+﻿using SpreadsheetCalculator.Parser;
 using System.Collections.Generic;
 
-namespace SpreadsheetCalculator.Cells
+namespace SpreadsheetCalculator
 {
     /// <summary>
-    /// Data contract for spreadsheet cell managing.
+    /// Data contract for spreadsheet cells.
     /// </summary>
-    interface ISpreadsheetCell
+    interface ICell
     {
         /// <summary>
         /// Cell is empty.

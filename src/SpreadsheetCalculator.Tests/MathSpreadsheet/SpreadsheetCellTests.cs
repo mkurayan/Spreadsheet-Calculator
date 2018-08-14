@@ -1,8 +1,7 @@
 ﻿using System.Linq;
 using Xunit;
-using SpreadsheetCalculator.Cells;
 using System;
-using SpreadsheetCalculator.Tokens;
+using SpreadsheetCalculator.Parser;
 
 namespace SpreadsheetCalculator.Tests
 {
@@ -11,7 +10,7 @@ namespace SpreadsheetCalculator.Tests
         [Fact]
         public void CreateNewSpreadsheetCell_WithAnyTokens_CellCreatedInPendingState()
         {
-            SpreadsheetCell cell = new SpreadsheetCell(Enumerable.Empty<Token>());
+            Cell cell = new Cell(Enumerable.Empty<Token>());
 
             Assert.Equal(CellState.Pending, cell.CellState);
 
@@ -21,7 +20,7 @@ namespace SpreadsheetCalculator.Tests
         [Fact]
         public void CreateNewSpreadsheetCell_EmptyTokensList_EmptyCellCreated()
         {
-            SpreadsheetCell cell = new SpreadsheetCell(Enumerable.Empty<Token>());
+            Cell cell = new Cell(Enumerable.Empty<Token>());
 
             Assert.True(cell.IsEmpty);
         }
@@ -30,7 +29,7 @@ namespace SpreadsheetCalculator.Tests
         [Fact]
         public void ParseExpressionToTokens_TokensListWithoutCellReferences_ListOfTokensWithoutCellReferences()
         {
-            SpreadsheetCell cell = new SpreadsheetCell(new[] {
+            Cell cell = new Cell(new[] {
                 new Token(TokenType.Number, "1"),
                 new Token(TokenType.Operator, "+"),
                 new Token(TokenType.Parenthesis, "["),
@@ -45,7 +44,7 @@ namespace SpreadsheetCalculator.Tests
         [Fact]
         public void ParseExpressionToTokens_TokensListWithCellReferences_ListOfTokensWithCellReferences()
         {
-            SpreadsheetCell cell = new SpreadsheetCell(new[] {
+            Cell cell = new Cell(new[] {
                 new Token(TokenType.CellReference, "A1"),
                 new Token(TokenType.Operator, "+"),
                 new Token(TokenType.CellReference, "A2")
@@ -59,7 +58,7 @@ namespace SpreadsheetCalculator.Tests
         [Fact]
         public void SetValue_ValidValue_CellInFulfilledState()
         {
-            SpreadsheetCell cell = new SpreadsheetCell(Enumerable.Empty<Token>());
+            Cell cell = new Cell(Enumerable.Empty<Token>());
 
             int value = 2;
 
@@ -76,7 +75,7 @@ namespace SpreadsheetCalculator.Tests
         [InlineData(double.NegativeInfinity)]
         public void SetValue_InvalidValue_CellInErrorState(double value)
         {
-            SpreadsheetCell cell = new SpreadsheetCell(Enumerable.Empty<Token>());
+            Cell cell = new Cell(Enumerable.Empty<Token>());
 
             cell.SetValue(value);
 
@@ -89,7 +88,7 @@ namespace SpreadsheetCalculator.Tests
         [InlineData(CellState.NumberError, "#NUM!")]
         public void SetError_CellErrorState_CellInErorrState(CellState errorState, string expectedOutput)
         {
-            SpreadsheetCell cell = new SpreadsheetCell(Enumerable.Empty<Token>());
+            Cell cell = new Cell(Enumerable.Empty<Token>());
 
             cell.SetError(errorState);
 
@@ -103,7 +102,7 @@ namespace SpreadsheetCalculator.Tests
         [InlineData(CellState.Pending)]
         public void SetError_NonErrorState_InvalidOperationExceptionThrown(CellState nonErrorState)
         {
-            SpreadsheetCell cell = new SpreadsheetCell(Enumerable.Empty<Token>());
+            Cell cell = new Cell(Enumerable.Empty<Token>());
 
             Assert.Throws<InvalidOperationException>(() => cell.SetError(nonErrorState));
         }

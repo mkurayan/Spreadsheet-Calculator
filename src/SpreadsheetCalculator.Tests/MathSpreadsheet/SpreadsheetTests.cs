@@ -1,8 +1,8 @@
-﻿using SpreadsheetCalculator.ExpressionCalculator;
+﻿using SpreadsheetCalculator.Calculator;
 using System;
 using Xunit;
 using Moq;
-using SpreadsheetCalculator.Tokens;
+using SpreadsheetCalculator.Parser;
 
 namespace SpreadsheetCalculator.Tests
 {

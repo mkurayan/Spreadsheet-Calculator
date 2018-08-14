@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using SpreadsheetCalculator.Utils;
+using SpreadsheetCalculator.Calculator;
 
-namespace SpreadsheetCalculator.Tokens
+namespace SpreadsheetCalculator.Parser
 {
     /// <summary>
     /// Parse string to tokens.

@@ -1,4 +1,4 @@
-﻿namespace SpreadsheetCalculator.Tokens
+﻿namespace SpreadsheetCalculator.Parser
 {
     struct Token
     {

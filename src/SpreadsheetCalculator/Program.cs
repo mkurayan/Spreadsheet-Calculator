@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using SpreadsheetCalculator.Exceptions;
 
 namespace SpreadsheetCalculator
 {
@@ -21,8 +20,9 @@ namespace SpreadsheetCalculator
             {
                 spreadsheet.Calculate();
             }
-            catch (CyclicDependencyException ex)
+            catch (SpreadsheetInternallException ex)
             {
+                // Report about exception which occurred during spreadsheet calculation and close application.
                 Console.WriteLine(ex.Message);
                 return;
             }

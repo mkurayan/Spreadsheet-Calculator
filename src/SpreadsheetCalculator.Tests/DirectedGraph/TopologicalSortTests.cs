@@ -1,5 +1,4 @@
-﻿using SpreadsheetCalculator.Exceptions;
-using SpreadsheetCalculator.Utils;
+﻿using SpreadsheetCalculator.DirectedGraph;
 using System.Collections.Generic;
 using System.Linq;
 using Xunit;

@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SpreadsheetCalculator.Cells;
-using SpreadsheetCalculator.ExpressionCalculator;
-using SpreadsheetCalculator.Tokens;
-using SpreadsheetCalculator.Utils;
+using SpreadsheetCalculator.Calculator;
+using SpreadsheetCalculator.Parser;
+using SpreadsheetCalculator.DirectedGraph;
 
 namespace SpreadsheetCalculator
 {
@@ -37,7 +36,7 @@ namespace SpreadsheetCalculator
         /// <summary>
         /// Spreadsheet Cells.
         /// </summary>
-        private ISpreadsheetCell[,] Cells { get; }
+        private ICell[,] Cells { get; }
 
         /// <summary>
         /// Spreadsheet cell evaluator.
@@ -55,6 +54,7 @@ namespace SpreadsheetCalculator
         /// <param name="columnNumber">Spreadsheet columns count.</param>
         /// <param name="rowNumber">Spreadsheet rows count.</param>
         /// <param name="calculator">Spreadsheet cell calculator.</param>
+        /// <param name="stringParser">Spreadsheet cell text parser.</param>
         public Spreadsheet(int columnNumber, int rowNumber, IExpressionCalculator calculator, IStringParser stringParser)
         {
             if (!IsInRange(columnNumber, 1, MaxColumnNumber))
@@ -70,18 +70,18 @@ namespace SpreadsheetCalculator
             RowNumber = rowNumber;
             ColumnNumber = columnNumber;
 
-            ExpressionCalculator = calculator ?? throw new ArgumentNullException("ExpressionCalculator is null.");
+            ExpressionCalculator = calculator ?? throw new ArgumentNullException(nameof(calculator));
 
-            StringParser = stringParser ?? throw new ArgumentNullException("stringParser is null.");
+            StringParser = stringParser ?? throw new ArgumentNullException(nameof(stringParser));
 
-            Cells = new ISpreadsheetCell[columnNumber, rowNumber];
+            Cells = new ICell[columnNumber, rowNumber];
         }
 
         /// <summary>
         /// Set concrete cell in spreadsheet.
         /// </summary>
-        /// <param name="rowNumber">Cell row number.</param>
         /// <param name="columnNumber">Cell column number.</param>
+        /// <param name="rowNumber">Cell row number.</param>
         /// <param name="value">Cell value.</param>
         public void SetCell(int columnNumber, int rowNumber, string value)
         {
@@ -90,14 +90,14 @@ namespace SpreadsheetCalculator
                 throw new InvalidOperationException("Requested cell is out of spreadsheet.");
             }
 
-            Cells[columnNumber, rowNumber] = new SpreadsheetCell(StringParser.Parse(value));
+            Cells[columnNumber, rowNumber] = new Cell(StringParser.Parse(value));
         }
 
         /// <summary>
         /// Get concrete cell value from spreadsheet.
         /// </summary>
-        /// <param name="rowNumber">Cell row number.</param>
         /// <param name="columnNumber">Cell column number.</param>
+        /// <param name="rowNumber">Cell row number.</param>
         /// <param name="value">Cell value.</param>
         public string GetCell(int columnNumber, int rowNumber)
         {
@@ -110,30 +110,30 @@ namespace SpreadsheetCalculator
         }
 
         /// <summary>
-        /// Process Spreadsheet data.
+        /// Calculate Spreadsheet cells.
         /// </summary>
+        /// <exception cref="SpreadsheetInternallException">Cyclic dependency found.</exception>
         public void Calculate()
         {
-            var sortedCells = TopologicalSort.Sort(
-                SpreadsheetCells(),
-                cell => cell.CellDependencies
-                    .Select(cellRef => GetCellByKey(cellRef.Value))
-                    .Where(reff => reff != null)
-            );
+            IList<ICell> sortedCells;
+
+            try
+            {
+                sortedCells = TopologicalSort.Sort(
+                    SpreadsheetCells(),
+                    cell => cell.CellDependencies
+                        .Select(cellRef => GetCellByKey(cellRef.Value))
+                        .Where(reff => reff != null)
+                );
+            }
+            catch (CyclicDependencyException exception)
+            {
+                throw new SpreadsheetInternallException("Cannot calculate spreadsheet, there is cyclic dependencies between cells.", exception);
+            }
 
             foreach (var cell in sortedCells)
             {
-                // Check dependencies state.
-                var reffSummary = GetCellReferencesSummaryState(cell);
-
-                if (reffSummary == CellState.Fulfilled)
-                {
-                    CalculateCell(cell);
-                }
-                else
-                {
-                    cell.SetError(reffSummary);
-                }
+                CalculateCell(cell);
             }
         }
 
@@ -143,7 +143,7 @@ namespace SpreadsheetCalculator
         /// </summary>
         /// <param name="key">Cell reference: A1, A2, etc...</param>
         /// <returns></returns>
-        private ISpreadsheetCell GetCellByKey(string key)
+        private ICell GetCellByKey(string key)
         {
             // Convert alphabetic character to index.
             int colIndex = key[0] - 65;
@@ -165,7 +165,54 @@ namespace SpreadsheetCalculator
             return null;
         }
 
-        private IEnumerable<ISpreadsheetCell> SpreadsheetCells()
+        private void CalculateCell(ICell cell)
+        {
+            if (cell.IsEmpty)
+            {
+                cell.SetValue(0);
+            }
+            else 
+            {
+                var cellDependencies = cell.CellDependencies.Select(token => GetCellByKey(token.Value));
+
+                if (cellDependencies.Any(c => c == null))
+                {
+                    cell.SetError(CellState.ValueError);
+                    return;
+                }
+
+                if (cellDependencies.Any(c => c.CellState == CellState.Pending))
+                {
+                    throw new SpreadsheetInternallException("Calculation flow error, one of the cell references were missed.");
+                }
+
+                if (cellDependencies.Any(c => c.CellState != CellState.Fulfilled))
+                {
+                    cell.SetError(CellState.ValueError);
+                    return;
+                }
+
+                var cellTokens = cell.CellTokens
+                    .Select(token => token.Type == TokenType.CellReference ? new Token(TokenType.Number, GetCellByKey(token.Value).ToString()) : token);
+
+                try
+                {
+                    double calculatedValue = ExpressionCalculator.Calculate(cellTokens);
+
+                    cell.SetValue(calculatedValue);
+                }
+                catch (CalculationException)
+                {             
+                    cell.SetError(CellState.ValueError);
+                }
+                catch (TokenInvalidValueException exception)
+                {
+                    throw new SpreadsheetInternallException("Error in cell parsing, some token contains invalid value.", exception);
+                }
+            }
+        }
+
+        private IEnumerable<ICell> SpreadsheetCells()
         {
             for (int col = 0; col < ColumnNumber; col++)
             {
@@ -176,67 +223,7 @@ namespace SpreadsheetCalculator
             }
         }
 
-        private CellState GetCellReferencesSummaryState(ISpreadsheetCell cell)
-        {
-            foreach (Token cellReff in cell.CellDependencies)
-            {
-                var reff = GetCellByKey(cellReff.Value);
-
-                if (reff == null)
-                {
-                    // Reference to not existed cell.
-                    return CellState.ValueError;
-                }
-                else if (reff.CellState != CellState.Fulfilled)
-                {
-                    return reff.CellState;
-                }
-            }
-
-            return CellState.Fulfilled;
-        }
-
-        private void CalculateCell(ISpreadsheetCell cell)
-        {
-            if (cell.IsEmpty)
-            {
-                cell.SetValue(0);
-            }
-            else
-            {
-                var cellTokens = cell.CellTokens.Select(token =>
-                {
-                    if (token.Type == TokenType.CellReference)
-                    {
-                        var reff = GetCellByKey(token.Value);
-
-                        if (reff.CellState == CellState.Fulfilled)
-                        {
-                            return reff.ToString();
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException($"Cell reference is in invalid state: {reff.CellState}");
-                        }
-                    }
-                    else
-                    {
-                        return token.Value;
-                    }
-                });
-
-                if (ExpressionCalculator.Vaildate(cellTokens))
-                {
-                    double calculatedValue = ExpressionCalculator.Calculate(cellTokens);
-
-                    cell.SetValue(calculatedValue);
-                }
-                else
-                {
-                    cell.SetError(CellState.ValueError);
-                }
-            }
-        }
+        private bool IsCellDependenciesMissied(ICell cell) => cell.CellDependencies.Select(token => GetCellByKey(token.Value)).Any(c => c == null);
 
         private bool IsCellInSpreadsheet(int colIndex, int rowIndex) => IsInRange(colIndex, 0, ColumnNumber - 1) && IsInRange(rowIndex, 0, RowNumber - 1);
 

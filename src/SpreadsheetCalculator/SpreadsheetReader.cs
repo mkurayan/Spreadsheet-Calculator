@@ -1,5 +1,5 @@
-﻿using SpreadsheetCalculator.ExpressionCalculator;
-using SpreadsheetCalculator.Tokens;
+﻿using SpreadsheetCalculator.Calculator;
+using SpreadsheetCalculator.Parser;
 using System;
 using System.IO;
 using System.Linq;

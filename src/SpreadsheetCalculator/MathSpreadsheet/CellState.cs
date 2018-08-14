@@ -1,7 +1,7 @@
-﻿namespace SpreadsheetCalculator.Cells
+﻿namespace SpreadsheetCalculator
 {
     /// <summary>
-    /// Describe inner SpreadsheetCell states.
+    /// Describe spreadsheet cell state.
     /// </summary>
     public enum CellState
     {

@@ -1,12 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
-using SpreadsheetCalculator.Exceptions;
-using System.Runtime.CompilerServices;
 
-namespace SpreadsheetCalculator.Utils
+namespace SpreadsheetCalculator.DirectedGraph
 {
     /// <summary>
-    /// Use depth-first search algorithm in order to sort items.
+    /// Use depth-first search algorithm in order to sort items in directed graph.
     /// </summary>
     static class TopologicalSort
     {

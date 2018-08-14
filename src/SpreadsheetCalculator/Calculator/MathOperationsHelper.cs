@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SpreadsheetCalculator.Utils
+namespace SpreadsheetCalculator.Calculator
 {
     static class MathOperationsHelper
     {
