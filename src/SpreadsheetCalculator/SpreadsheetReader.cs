@@ -38,7 +38,7 @@ namespace SpreadsheetCalculator
                 throw new ArgumentException("Spreadsheet size not provided or provided incorrectly.");
             }
 
-            var spreadsheet = new Spreadsheet(arr[0], arr[1], new PostfixNotationCalculator(), new StringParser());
+            var spreadsheet = new Spreadsheet(arr[0], arr[1], new InfixNotationCalculator(), new StringParser());
 
             for (var rowNumber = 0; rowNumber < spreadsheet.RowNumber; rowNumber++)
             {

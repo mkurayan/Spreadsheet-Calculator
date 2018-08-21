@@ -3,7 +3,8 @@
 namespace SpreadsheetCalculator.Calculator
 {
     /// <summary>
-    /// Use this exception when user input contain invalid mathematical formula.
+    /// Throw this exception when there is a problem with user input and we cannot calculate cell value.
+    /// This is not a critical exception, we can handle it and report about error.
     /// </summary>
     class CalculationException : Exception
     {

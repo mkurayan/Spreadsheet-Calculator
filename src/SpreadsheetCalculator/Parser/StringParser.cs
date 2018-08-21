@@ -14,6 +14,8 @@ namespace SpreadsheetCalculator.Parser
         // This pattern check if token is reference to another cell in spreadsheet.
         private static readonly Regex CellReferencePattern = new Regex(@"^[A-Z]\d+$");
 
+        private HashSet<string> Operators = new HashSet<string> { "+", "-", "*", "/" };
+
         public IEnumerable<Token> Parse(string input) => input
             .Split(new char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries)
             .Select(token => new Token(GetTokenType(token), token));
@@ -27,10 +29,10 @@ namespace SpreadsheetCalculator.Parser
 
             if (token == "(" || token == ")")
             {
-                return TokenType.Parenthesis;
+                return TokenType.RoundBracket;
             }
 
-            if (MathOperationsHelper.Operators.ContainsKey(token))
+            if (Operators.Contains(token))
             {
                 return TokenType.Operator;
             }

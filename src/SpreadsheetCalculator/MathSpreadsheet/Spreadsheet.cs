@@ -193,21 +193,31 @@ namespace SpreadsheetCalculator
                 }
 
                 var cellTokens = cell.CellTokens
-                    .Select(token => token.Type == TokenType.CellReference ? new Token(TokenType.Number, GetCellByKey(token.Value).ToString()) : token);
+                    .Select(token => token.Type == TokenType.CellReference ? new Token(TokenType.Number, GetCellByKey(token.Value).ToString()) : token)
+                    .ToList();
 
-                try
+                (bool validationResult, string validationError) = ExpressionCalculator.Validate(cellTokens);
+
+                if (validationResult)
                 {
-                    double calculatedValue = ExpressionCalculator.Calculate(cellTokens);
+                    try
+                    {
+                        double calculatedValue = ExpressionCalculator.Calculate(cellTokens);
 
-                    cell.SetValue(calculatedValue);
+                        cell.SetValue(calculatedValue);
+                    }
+                    catch (CalculationException)
+                    {
+                        cell.SetError(CellState.ValueError);
+                    }
+                    catch (CalculationInrernalException exception)
+                    {
+                        throw new SpreadsheetInternallException("Internal error during cell calculation.", exception);
+                    }
                 }
-                catch (CalculationException)
-                {             
+                else
+                {
                     cell.SetError(CellState.ValueError);
-                }
-                catch (TokenInvalidValueException exception)
-                {
-                    throw new SpreadsheetInternallException("Error in cell parsing, some token contains invalid value.", exception);
                 }
             }
         }

@@ -70,7 +70,7 @@ namespace SpreadsheetCalculator.Tests.Tokens
         [InlineData(")")]
         public void CreateNewCellToken_Parenthesis_ContainsParenthesisToken(string value)
         {
-            Assert.Contains(Parser.Parse(value), token => token.Type == TokenType.Parenthesis);
+            Assert.Contains(Parser.Parse(value), token => token.Type == TokenType.RoundBracket);
         }
 
         [Theory]
@@ -89,7 +89,7 @@ namespace SpreadsheetCalculator.Tests.Tokens
         [InlineData("[ ] { }")]
         public void CreateNewCellToken_NotParenthesis_DoesNotContainsParenthesisToken(string value)
         {
-            Assert.DoesNotContain(Parser.Parse(value), token => token.Type == TokenType.Parenthesis);
+            Assert.DoesNotContain(Parser.Parse(value), token => token.Type == TokenType.RoundBracket);
         }
 
         [Theory]

@@ -18,9 +18,9 @@
         Operator,
 
         /// <summary>
-        /// Token contains parenthesis
+        /// Token contains round bracket.
         /// </summary>
-        Parenthesis,
+        RoundBracket,
 
         /// <summary>
         /// Token contains unknown expression. 

@@ -4,14 +4,14 @@ using Xunit;
 
 namespace SpreadsheetCalculator.Tests
 {
-    public class PostfixNotationCalculatorTests
+    public class InfixNotationCalculatorTests
     {
-        PostfixNotationCalculator calculator;
+        InfixNotationCalculator calculator;
         StringParser stringParser;
 
-        public PostfixNotationCalculatorTests()
+        public InfixNotationCalculatorTests()
         {
-            calculator = new PostfixNotationCalculator();
+            calculator = new InfixNotationCalculator();
             stringParser = new StringParser();
         }
 
@@ -24,11 +24,11 @@ namespace SpreadsheetCalculator.Tests
         }
 
         [Theory]
-        [InlineData("1 1 +", 2)]
-        [InlineData("1 1 -", 0)]
-        [InlineData("4 2 /", 2)]
-        [InlineData("4 2 *", 8)]
-        public void Calculate_BinaryOperatorWithTwoOperands_OperationResult(string expression, double expectedValue)
+        [InlineData("1 + 1", 2)]
+        [InlineData("1 - 1", 0)]
+        [InlineData("4 / 2", 2)]
+        [InlineData("4 * 2", 8)]
+        public void Calculate_BinaryOperatorWithTwoOperands_ValidOperationResult(string expression, double expectedValue)
         {
             var tokens = stringParser.Parse(expression);
 
@@ -36,9 +36,14 @@ namespace SpreadsheetCalculator.Tests
         }
 
         [Theory]
-        [InlineData("5 1 2 + 4 * 3 - +", 14)]
-        [InlineData("4 2 5 * + 1 3 2 * + /", 2)]
-        public void Calculate_rpnExpression_ExpectedResult(string expression, double expectedValue)
+        [InlineData("4 + 2 * 5", 14)]
+        [InlineData("2 * 5 + 4", 14)]
+        [InlineData("3 * ( 5 - 3 )", 6)]
+        [InlineData("( 10 + 10 ) / ( 8 / 2 )", 5)]
+        [InlineData("( ( 3 + 3 ) + ( 2 * 2 ) ) / 2", 5)]
+        [InlineData("20 / ( 2 * 2 )", 5)]
+        [InlineData("( 1 )  + ( 1 )", 2)]
+        public void Calculate_MathFormula_ValidTotal(string expression, double expectedValue)
         {
             var tokens = stringParser.Parse(expression);
 
@@ -47,16 +52,34 @@ namespace SpreadsheetCalculator.Tests
 
         [Theory]
         [InlineData("1")]
-        [InlineData("1 1 +")]
-        [InlineData("1 1 -")]
-        [InlineData("1 1 /")]
-        [InlineData("1 1 *")]
-        [InlineData("4 2 5 * + 1 3 2 * + /")]
+        [InlineData("1 + 1")]
+        [InlineData("1 - 1")]
+        [InlineData("1 / 1")]
+        [InlineData("1 * 1")]
+        [InlineData("( 1 + 1 )")]
+        [InlineData("( 1 - 1 )")]
+        [InlineData("( 1 / 1 )")]
+        [InlineData("( 1 * 1 )")]
+        [InlineData("4 + 2 * 5")]
+        [InlineData("( ( 3 + 3 ) + ( 2 * 2 ) ) / 2")]
         public void Validate_CorrectExpression_ExpressionValid(string invalidExpression)
         {
             var tokens = stringParser.Parse(invalidExpression);
 
             Assert.True(calculator.Validate(tokens).isValid);
+        }
+
+        [Theory]
+        [InlineData(") 1 + 1")]
+        [InlineData("1 + 1 (")]
+        [InlineData("( 1 + 1 ")]
+        [InlineData(" 1 + 1 )")]
+        [InlineData("( 1 + 1 ) / ( 1 + 1")]
+        public void Validate_ParenthesesMismatch_ExpressionInvalid(string invalidExpression)
+        {
+            var tokens = stringParser.Parse(invalidExpression);
+
+            Assert.False(calculator.Validate(tokens).isValid);
         }
 
         [Theory]
@@ -84,11 +107,25 @@ namespace SpreadsheetCalculator.Tests
         }
 
         [Theory]
-        [InlineData("1 + 1")]
-        [InlineData("1 - 1")]
-        [InlineData("1 / 1")]
-        [InlineData("1 * 1")]
-        public void Validate_InfixNotationString_ExpressionInvalid(string invalidExpression)
+        [InlineData("1 1 +")]
+        [InlineData("1 1 -")]
+        [InlineData("1 1 /")]
+        [InlineData("1 1 *")]
+        [InlineData("1 1 1 + +")]
+        public void Validate_PostfixNotationString_ExpressionInvalid(string invalidExpression)
+        {
+            var tokens = stringParser.Parse(invalidExpression);
+
+            Assert.False(calculator.Validate(tokens).isValid);
+        }
+
+        [Theory]
+        [InlineData("+ 1 1")]
+        [InlineData("- 1 1")]
+        [InlineData("/ 1 1")]
+        [InlineData("* 1 1")]
+        [InlineData("+ + 1 1 1")]
+        public void Validate_PrefixNotationString_ExpressionInvalid(string invalidExpression)
         {
             var tokens = stringParser.Parse(invalidExpression);
 
@@ -100,16 +137,6 @@ namespace SpreadsheetCalculator.Tests
         [InlineData("x + x")]
         [InlineData("1 1 + x +")]
         public void Validate_UnknownSymbolsInString_ExpressionInvalid(string invalidExpression)
-        {
-            var tokens = stringParser.Parse(invalidExpression);
-
-            Assert.False(calculator.Validate(tokens).isValid);
-        }
-
-        [Theory]
-        [InlineData("( 1 )")]
-        [InlineData("1 1 + ( 2 2 + ) + ")]
-        public void Validate_ParenthesesInString_ExpressionInvalid(string invalidExpression)
         {
             var tokens = stringParser.Parse(invalidExpression);
 

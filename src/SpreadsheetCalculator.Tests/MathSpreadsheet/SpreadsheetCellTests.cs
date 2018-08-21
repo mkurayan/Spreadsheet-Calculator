@@ -32,7 +32,7 @@ namespace SpreadsheetCalculator.Tests
             Cell cell = new Cell(new[] {
                 new Token(TokenType.Number, "1"),
                 new Token(TokenType.Operator, "+"),
-                new Token(TokenType.Parenthesis, "["),
+                new Token(TokenType.RoundBracket, "["),
                 new Token(TokenType.Unknown, "&?~")
             });
 
