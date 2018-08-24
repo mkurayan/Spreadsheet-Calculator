@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SpreadsheetCalculator.Calculator
+namespace SpreadsheetCalculator.ExpressionCalculator
 {
     /// <summary>
     /// Throw this exception when there is a problem with user input and we cannot calculate cell value.

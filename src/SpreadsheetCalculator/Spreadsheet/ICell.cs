@@ -1,7 +1,7 @@
-﻿using SpreadsheetCalculator.Parser;
+﻿using SpreadsheetCalculator.ExpressionParser;
 using System.Collections.Generic;
 
-namespace SpreadsheetCalculator
+namespace SpreadsheetCalculator.Spreadsheet
 {
     /// <summary>
     /// Data contract for spreadsheet cells.

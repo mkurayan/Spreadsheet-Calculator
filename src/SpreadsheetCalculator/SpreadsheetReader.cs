@@ -1,5 +1,6 @@
-﻿using SpreadsheetCalculator.Calculator;
-using SpreadsheetCalculator.Parser;
+﻿using SpreadsheetCalculator.ExpressionCalculator;
+using SpreadsheetCalculator.ExpressionParser;
+using SpreadsheetCalculator.Spreadsheet;
 using System;
 using System.IO;
 using System.Linq;
@@ -28,7 +29,7 @@ namespace SpreadsheetCalculator
         /// <summary>
         /// Read Spreadsheet from input source.
         /// </summary>
-        public Spreadsheet Read()
+        public InMemorySpreadsheet Read()
         {
             // Read spreadsheet size. 
             var arr = _tIn.ReadLine().Split(' ').Select(Int32.Parse).ToArray();
@@ -38,7 +39,7 @@ namespace SpreadsheetCalculator
                 throw new ArgumentException("Spreadsheet size not provided or provided incorrectly.");
             }
 
-            var spreadsheet = new Spreadsheet(arr[0], arr[1], new InfixNotationCalculator(), new StringParser());
+            var spreadsheet = new InMemorySpreadsheet(arr[0], arr[1], new InfixNotationCalculator(), new StringParser());
 
             for (var rowNumber = 0; rowNumber < spreadsheet.RowNumber; rowNumber++)
             {

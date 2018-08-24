@@ -1,7 +1,7 @@
-﻿using SpreadsheetCalculator.DirectedGraph;
-using SpreadsheetCalculator.Calculator;
-using SpreadsheetCalculator.Parser;
-using Xunit;
+﻿using Xunit;
+using SpreadsheetCalculator.ExpressionCalculator;
+using SpreadsheetCalculator.ExpressionParser;
+using SpreadsheetCalculator.Spreadsheet;
 
 namespace SpreadsheetCalculator.IntegrationTests
 {
@@ -20,7 +20,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         [Fact]
         public void Calculate_SpereadsheetWithoutCellReferences_AllCellsCalculated()
         {
-            var spreadsheet = new Spreadsheet(2, 3, Calculator, Parser);
+            var spreadsheet = new InMemorySpreadsheet(2, 3, Calculator, Parser);
 
             for (int row = 0; row < spreadsheet.RowNumber; row++)
             {
@@ -46,7 +46,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         [Fact]
         public void Calculate_SpereadsheetWithCellReferencesOnly_AllCellsCalculated()
         {
-            var spreadsheet = new Spreadsheet(3, 2, Calculator, Parser);
+            var spreadsheet = new InMemorySpreadsheet(3, 2, Calculator, Parser);
 
             /*
              *        A    |   B    |   C 
@@ -81,7 +81,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         [Fact]
         public void Calculate_TypicalSpereadsheet_AllCellsCalculated()
         {
-            var spreadsheet = new Spreadsheet(3, 2, Calculator, Parser);
+            var spreadsheet = new InMemorySpreadsheet(3, 2, Calculator, Parser);
 
             /*
              *        A         |   B    |   C 
@@ -117,7 +117,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         [Fact]
         public void Calculate_SpereadsheetWithCircularReferences_ThrowSpreadsheetInternallException()
         {
-            var spreadsheet = new Spreadsheet(3, 1, Calculator, Parser);
+            var spreadsheet = new InMemorySpreadsheet(3, 1, Calculator, Parser);
 
             /*
              *    |  A   |  B  |   C 
@@ -135,7 +135,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         [Fact]
         public void Calculate_InvalidCellReferenceInsSpereadsheet_ShowInvalidValueError()
         {
-            var spreadsheet = new Spreadsheet(3, 2, Calculator, Parser);
+            var spreadsheet = new InMemorySpreadsheet(3, 2, Calculator, Parser);
 
             /*
              *    |   A   |  B  |   C 
@@ -165,7 +165,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         [Fact]
         public void Calculate_SpereadsheetWithInvalidMathematicalOperation_ShowNumberError()
         {
-            var spreadsheet = new Spreadsheet(3, 1, Calculator, Parser);
+            var spreadsheet = new InMemorySpreadsheet(3, 1, Calculator, Parser);
 
             /*
              *    |  A   |    B    |  C 
@@ -187,7 +187,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         [Fact]
         public void Calculate_SpereadsheetWithInvalidDataInCell_ShowNumberError()
         {
-            var spreadsheet = new Spreadsheet(3, 2, Calculator, Parser);
+            var spreadsheet = new InMemorySpreadsheet(3, 2, Calculator, Parser);
 
             /*
              *    |    A   |    B    |    C      |
@@ -216,7 +216,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         [Fact]
         public void Calculate_SpereadsheetWithEmptyCell_CellsContainsDefaultValues() 
         {
-            var spreadsheet = new Spreadsheet(2, 1, Calculator, Parser);
+            var spreadsheet = new InMemorySpreadsheet(2, 1, Calculator, Parser);
 
             /*
              *    |  A  |  B   |   

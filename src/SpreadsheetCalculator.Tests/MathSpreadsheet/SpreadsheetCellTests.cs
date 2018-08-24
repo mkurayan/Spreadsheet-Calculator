@@ -1,7 +1,8 @@
 ﻿using System.Linq;
 using Xunit;
 using System;
-using SpreadsheetCalculator.Parser;
+using SpreadsheetCalculator.ExpressionParser;
+using SpreadsheetCalculator.Spreadsheet;
 
 namespace SpreadsheetCalculator.Tests
 {

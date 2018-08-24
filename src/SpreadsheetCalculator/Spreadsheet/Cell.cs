@@ -1,9 +1,9 @@
-﻿using SpreadsheetCalculator.Parser;
+﻿using SpreadsheetCalculator.ExpressionParser;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace SpreadsheetCalculator
+namespace SpreadsheetCalculator.Spreadsheet
 {
     /// <summary>
     /// Concrete cell in the spreadsheet.

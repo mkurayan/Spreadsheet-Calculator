@@ -1,5 +1,5 @@
-﻿using SpreadsheetCalculator.Calculator;
-using SpreadsheetCalculator.Parser;
+﻿using SpreadsheetCalculator.ExpressionCalculator;
+using SpreadsheetCalculator.ExpressionParser;
 using Xunit;
 
 namespace SpreadsheetCalculator.Tests

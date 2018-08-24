@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SpreadsheetCalculator.Calculator;
-using SpreadsheetCalculator.Parser;
+using SpreadsheetCalculator.ExpressionCalculator;
+using SpreadsheetCalculator.ExpressionParser;
 using SpreadsheetCalculator.DirectedGraph;
 
-namespace SpreadsheetCalculator
+namespace SpreadsheetCalculator.Spreadsheet
 {
     /// <summary>
     /// Spreadsheet of N x M size.
     /// </summary>
-    class Spreadsheet
+    class InMemorySpreadsheet
     {
         /// <summary>
         /// Define maximum possible rows in Spreadsheet.
@@ -55,7 +55,7 @@ namespace SpreadsheetCalculator
         /// <param name="rowNumber">Spreadsheet rows count.</param>
         /// <param name="calculator">Spreadsheet cell calculator.</param>
         /// <param name="stringParser">Spreadsheet cell text parser.</param>
-        public Spreadsheet(int columnNumber, int rowNumber, IExpressionCalculator calculator, IStringParser stringParser)
+        public InMemorySpreadsheet(int columnNumber, int rowNumber, IExpressionCalculator calculator, IStringParser stringParser)
         {
             if (!IsInRange(columnNumber, 1, MaxColumnNumber))
             {

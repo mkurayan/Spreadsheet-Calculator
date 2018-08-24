@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace SpreadsheetCalculator.Parser
+namespace SpreadsheetCalculator.ExpressionParser
 {
     interface IStringParser
     {

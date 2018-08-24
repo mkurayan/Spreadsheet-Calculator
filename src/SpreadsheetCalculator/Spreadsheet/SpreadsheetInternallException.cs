@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SpreadsheetCalculator
+namespace SpreadsheetCalculator.Spreadsheet
 {
     class SpreadsheetInternallException : Exception
     {

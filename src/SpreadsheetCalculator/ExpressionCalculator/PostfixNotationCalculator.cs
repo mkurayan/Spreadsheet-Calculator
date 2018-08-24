@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SpreadsheetCalculator.Parser;
+using SpreadsheetCalculator.ExpressionParser;
 
-namespace SpreadsheetCalculator.Calculator
+namespace SpreadsheetCalculator.ExpressionCalculator
 {
     /// <summary>
     /// Evaluates expressions in postfix notation (Reverse Polish Notation).

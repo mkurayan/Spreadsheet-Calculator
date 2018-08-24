@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SpreadsheetCalculator.Spreadsheet;
+using System;
 using System.IO;
 
 namespace SpreadsheetCalculator
@@ -10,7 +11,7 @@ namespace SpreadsheetCalculator
             var inputFile = args.Length > 0 ? args[0] :null;
             var outputFile = args.Length > 1 ? args[1] : null;
 
-            Spreadsheet spreadsheet;
+            InMemorySpreadsheet spreadsheet;
             using (TextReader reader = GetTextReader(inputFile))
             {
                 spreadsheet = new SpreadsheetReader(reader).Read();

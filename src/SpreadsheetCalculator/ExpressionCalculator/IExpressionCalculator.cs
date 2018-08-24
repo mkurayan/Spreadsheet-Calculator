@@ -1,7 +1,7 @@
-﻿using SpreadsheetCalculator.Parser;
+﻿using SpreadsheetCalculator.ExpressionParser;
 using System.Collections.Generic;
 
-namespace SpreadsheetCalculator.Calculator
+namespace SpreadsheetCalculator.ExpressionCalculator
 {
     interface IExpressionCalculator
     {

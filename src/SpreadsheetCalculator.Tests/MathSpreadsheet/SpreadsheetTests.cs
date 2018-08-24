@@ -1,8 +1,9 @@
-﻿using SpreadsheetCalculator.Calculator;
+﻿using SpreadsheetCalculator.ExpressionCalculator;
 using System;
 using Xunit;
 using Moq;
-using SpreadsheetCalculator.Parser;
+using SpreadsheetCalculator.ExpressionParser;
+using SpreadsheetCalculator.Spreadsheet;
 
 namespace SpreadsheetCalculator.Tests
 {
@@ -26,25 +27,25 @@ namespace SpreadsheetCalculator.Tests
         [InlineData(1, 1000001)]
         public void SpreadsheetConstructor_InvalidSize_ThrowArgumentException(int rowNumber, int columnNumber)
         {
-            Assert.Throws<ArgumentException>(() => new Spreadsheet(columnNumber, rowNumber, ExpressionCalculatorMock.Object, StringParserMock.Object));
+            Assert.Throws<ArgumentException>(() => new InMemorySpreadsheet(columnNumber, rowNumber, ExpressionCalculatorMock.Object, StringParserMock.Object));
         }
 
         [Fact]
         public void SpreadsheetConstructor_ExpressionCalculatorMissied_ThrowArgumentException()
         {
-            Assert.Throws<ArgumentNullException>(() => new Spreadsheet(2, 2, null, StringParserMock.Object));
+            Assert.Throws<ArgumentNullException>(() => new InMemorySpreadsheet(2, 2, null, StringParserMock.Object));
         }
 
         [Fact]
         public void SpreadsheetConstructor_StringParserMissied_ThrowArgumentException()
         {
-            Assert.Throws<ArgumentNullException>(() => new Spreadsheet(2, 2, ExpressionCalculatorMock.Object, null));
+            Assert.Throws<ArgumentNullException>(() => new InMemorySpreadsheet(2, 2, ExpressionCalculatorMock.Object, null));
         }
 
         [Fact]
         public void SpreadsheetConstructor_CorrectOptions_SpreadsheetCreated()
         {
-            var spreadsheet = new Spreadsheet(2, 3, ExpressionCalculatorMock.Object, StringParserMock.Object);
+            var spreadsheet = new InMemorySpreadsheet(2, 3, ExpressionCalculatorMock.Object, StringParserMock.Object);
 
             Assert.Equal(2, spreadsheet.ColumnNumber);
             Assert.Equal(3, spreadsheet.RowNumber);
@@ -59,7 +60,7 @@ namespace SpreadsheetCalculator.Tests
         [InlineData(1, 1)]
         public void GetCell_CellIsOutOfSpreadsheetBoundaries_ThrowArgumentException(int columnNumber, int rowNumber)
         {
-            var spreadsheet = new Spreadsheet(1, 1, ExpressionCalculatorMock.Object, StringParserMock.Object);
+            var spreadsheet = new InMemorySpreadsheet(1, 1, ExpressionCalculatorMock.Object, StringParserMock.Object);
 
             Assert.Throws<InvalidOperationException>(() => spreadsheet.GetCell(rowNumber, columnNumber));
         }
@@ -73,7 +74,7 @@ namespace SpreadsheetCalculator.Tests
         [InlineData(1, 1)]
         public void SetCell_CellIsOutOfSpreadsheetBoundaries_ThrowArgumentException(int columnNumber, int rowNumber)
         {
-            var spreadsheet = new Spreadsheet(1, 1, ExpressionCalculatorMock.Object, StringParserMock.Object);
+            var spreadsheet = new InMemorySpreadsheet(1, 1, ExpressionCalculatorMock.Object, StringParserMock.Object);
 
             Assert.Throws<InvalidOperationException>(() => spreadsheet.SetCell(rowNumber, columnNumber, "x"));
         }
@@ -81,7 +82,7 @@ namespace SpreadsheetCalculator.Tests
         [Fact]
         public void SetCell_CellValueButNotCalculate_GetCellInPendingState()
         {
-            var spreadsheet = new Spreadsheet(1, 1, ExpressionCalculatorMock.Object, StringParserMock.Object);
+            var spreadsheet = new InMemorySpreadsheet(1, 1, ExpressionCalculatorMock.Object, StringParserMock.Object);
 
             var cellValue = "dummy"; ;
 
@@ -98,7 +99,7 @@ namespace SpreadsheetCalculator.Tests
 
             string cellCoordinatesToString(int i, int j) => $"row: {i} column: {j}";
 
-            var spreadsheet = new Spreadsheet(rowNumber, columnNumber, ExpressionCalculatorMock.Object, StringParserMock.Object);
+            var spreadsheet = new InMemorySpreadsheet(rowNumber, columnNumber, ExpressionCalculatorMock.Object, StringParserMock.Object);
 
             for (int i = 0; i < rowNumber; i++)
             {

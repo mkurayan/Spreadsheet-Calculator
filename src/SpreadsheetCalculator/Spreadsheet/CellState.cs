@@ -1,4 +1,4 @@
-﻿namespace SpreadsheetCalculator
+﻿namespace SpreadsheetCalculator.Spreadsheet
 {
     /// <summary>
     /// Describe spreadsheet cell state.

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using SpreadsheetCalculator.Spreadsheet;
+using System;
 using System.IO;
 
 namespace SpreadsheetCalculator
@@ -25,7 +26,7 @@ namespace SpreadsheetCalculator
         /// <summary>
         /// Write Spreadsheet to output stream.
         /// </summary>
-        public void Write(Spreadsheet spreadsheet)
+        public void Write(InMemorySpreadsheet spreadsheet)
         {
             _tOut.WriteLine("{0} {1}", spreadsheet.ColumnNumber, spreadsheet.RowNumber );
 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SpreadsheetCalculator.Calculator
+namespace SpreadsheetCalculator.ExpressionCalculator
 {
     /// <summary>
     /// Throw this exception in case if there is internal problem during calculation process.
