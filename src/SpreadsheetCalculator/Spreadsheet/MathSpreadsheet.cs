@@ -10,7 +10,7 @@ namespace SpreadsheetCalculator.Spreadsheet
     /// <summary>
     /// Spreadsheet of N x M size.
     /// </summary>
-    class InMemorySpreadsheet
+    class MathSpreadsheet : IViewSpreadsheet, IEditSpreadsheet
     {
         /// <summary>
         /// Define maximum possible rows in Spreadsheet.
@@ -24,19 +24,9 @@ namespace SpreadsheetCalculator.Spreadsheet
         private const int MaxColumnNumber = 26;
 
         /// <summary>
-        /// Spreadsheet rows count.
-        /// </summary>
-        public int RowNumber { get; }
-
-        /// <summary>
-        /// Spreadsheet columns count.
-        /// </summary>
-        public int ColumnNumber { get; }
-
-        /// <summary>
         /// Spreadsheet Cells.
         /// </summary>
-        private ICell[,] Cells { get; }
+        private ICell[,] Cells { get; set; }
 
         /// <summary>
         /// Spreadsheet cell evaluator.
@@ -49,13 +39,31 @@ namespace SpreadsheetCalculator.Spreadsheet
         private IStringParser StringParser { get; }
 
         /// <summary>
-        /// Create new Spreadsheet. 
+        /// Implements <see cref="IViewSpreadsheet.RowsCount"/>.
         /// </summary>
-        /// <param name="columnNumber">Spreadsheet columns count.</param>
-        /// <param name="rowNumber">Spreadsheet rows count.</param>
+        public int RowsCount => Cells.GetLength(1);
+
+        /// <summary>
+        /// Implements <see cref="IViewSpreadsheet.ColumnsCount"/>.
+        /// </summary>
+        public int ColumnsCount => Cells.GetLength(0);
+
+        /// <summary>
+        /// Create new Spreadsheet.
+        /// </summary>
         /// <param name="calculator">Spreadsheet cell calculator.</param>
         /// <param name="stringParser">Spreadsheet cell text parser.</param>
-        public InMemorySpreadsheet(int columnNumber, int rowNumber, IExpressionCalculator calculator, IStringParser stringParser)
+        public MathSpreadsheet(IExpressionCalculator calculator, IStringParser stringParser)
+        {
+            ExpressionCalculator = calculator ?? throw new ArgumentNullException(nameof(calculator));
+
+            StringParser = stringParser ?? throw new ArgumentNullException(nameof(stringParser));
+        }
+
+        /// <summary>
+        /// Implements <see cref="IEditSpreadsheet.SetSize"/>.
+        /// </summary>
+        public void SetSize(int columnNumber, int rowNumber)
         {
             if (!IsInRange(columnNumber, 1, MaxColumnNumber))
             {
@@ -67,23 +75,13 @@ namespace SpreadsheetCalculator.Spreadsheet
                 throw new ArgumentException("Invalid row number.");
             }
 
-            RowNumber = rowNumber;
-            ColumnNumber = columnNumber;
-
-            ExpressionCalculator = calculator ?? throw new ArgumentNullException(nameof(calculator));
-
-            StringParser = stringParser ?? throw new ArgumentNullException(nameof(stringParser));
-
             Cells = new ICell[columnNumber, rowNumber];
         }
 
         /// <summary>
-        /// Set concrete cell in spreadsheet.
+        /// Implements <see cref="IEditSpreadsheet.SetValue"/>.
         /// </summary>
-        /// <param name="columnNumber">Cell column number.</param>
-        /// <param name="rowNumber">Cell row number.</param>
-        /// <param name="value">Cell value.</param>
-        public void SetCell(int columnNumber, int rowNumber, string value)
+        public void SetValue(int columnNumber, int rowNumber, string value)
         {
             if (!IsCellInSpreadsheet(columnNumber, rowNumber))
             {
@@ -94,23 +92,20 @@ namespace SpreadsheetCalculator.Spreadsheet
         }
 
         /// <summary>
-        /// Get concrete cell value from spreadsheet.
+        /// Implements <see cref="IViewSpreadsheet.GetValue"/>.
         /// </summary>
-        /// <param name="columnNumber">Cell column number.</param>
-        /// <param name="rowNumber">Cell row number.</param>
-        /// <param name="value">Cell value.</param>
-        public string GetCell(int columnNumber, int rowNumber)
+        public string GetValue(int columnIndex, int rowIndex)
         {
-            if (!IsCellInSpreadsheet(columnNumber, rowNumber))
+            if (!IsCellInSpreadsheet(columnIndex, rowIndex))
             {
                 throw new InvalidOperationException("Requested cell is out of spreadsheet.");
             }
 
-            return Cells[columnNumber, rowNumber].ToString();
+            return Cells[columnIndex, rowIndex].ToString();
         }
 
         /// <summary>
-        /// Calculate Spreadsheet cells.
+        /// Calculate all cells in spreadsheet.
         /// </summary>
         /// <exception cref="SpreadsheetInternallException">Cyclic dependency found.</exception>
         public void Calculate()
@@ -224,9 +219,9 @@ namespace SpreadsheetCalculator.Spreadsheet
 
         private IEnumerable<ICell> SpreadsheetCells()
         {
-            for (int col = 0; col < ColumnNumber; col++)
+            for (int col = 0; col < ColumnsCount; col++)
             {
-                for (int row = 0; row < RowNumber; row++)
+                for (int row = 0; row < RowsCount; row++)
                 {
                     yield return Cells[col, row];
                 }
@@ -235,7 +230,7 @@ namespace SpreadsheetCalculator.Spreadsheet
 
         private bool IsCellDependenciesMissied(ICell cell) => cell.CellDependencies.Select(token => GetCellByKey(token.Value)).Any(c => c == null);
 
-        private bool IsCellInSpreadsheet(int colIndex, int rowIndex) => IsInRange(colIndex, 0, ColumnNumber - 1) && IsInRange(rowIndex, 0, RowNumber - 1);
+        private bool IsCellInSpreadsheet(int colIndex, int rowIndex) => IsInRange(colIndex, 0, ColumnsCount - 1) && IsInRange(rowIndex, 0, RowsCount - 1);
 
         private static bool IsInRange(int target, int start, int end) => target >= start && target <= end;
     }

@@ -12,10 +12,14 @@ namespace SpreadsheetCalculator.Tests
         Mock<IExpressionCalculator> ExpressionCalculatorMock;
         Mock<IStringParser> StringParserMock;
 
+        MathSpreadsheet Spreadsheet;
+
         public SpreadsheetTests()
         {
             ExpressionCalculatorMock = new Mock<IExpressionCalculator>();
             StringParserMock = new Mock<IStringParser>();
+
+            Spreadsheet = new MathSpreadsheet(ExpressionCalculatorMock.Object, StringParserMock.Object);
         }
 
         [Theory]
@@ -27,28 +31,28 @@ namespace SpreadsheetCalculator.Tests
         [InlineData(1, 1000001)]
         public void SpreadsheetConstructor_InvalidSize_ThrowArgumentException(int rowNumber, int columnNumber)
         {
-            Assert.Throws<ArgumentException>(() => new InMemorySpreadsheet(columnNumber, rowNumber, ExpressionCalculatorMock.Object, StringParserMock.Object));
+            Assert.Throws<ArgumentException>(() => Spreadsheet.SetSize(columnNumber, rowNumber));
         }
 
         [Fact]
         public void SpreadsheetConstructor_ExpressionCalculatorMissied_ThrowArgumentException()
         {
-            Assert.Throws<ArgumentNullException>(() => new InMemorySpreadsheet(2, 2, null, StringParserMock.Object));
+            Assert.Throws<ArgumentNullException>(() => new MathSpreadsheet(null, StringParserMock.Object));
         }
 
         [Fact]
         public void SpreadsheetConstructor_StringParserMissied_ThrowArgumentException()
         {
-            Assert.Throws<ArgumentNullException>(() => new InMemorySpreadsheet(2, 2, ExpressionCalculatorMock.Object, null));
+            Assert.Throws<ArgumentNullException>(() => new MathSpreadsheet(ExpressionCalculatorMock.Object, null));
         }
 
         [Fact]
         public void SpreadsheetConstructor_CorrectOptions_SpreadsheetCreated()
         {
-            var spreadsheet = new InMemorySpreadsheet(2, 3, ExpressionCalculatorMock.Object, StringParserMock.Object);
+            Spreadsheet.SetSize(2, 3);
 
-            Assert.Equal(2, spreadsheet.ColumnNumber);
-            Assert.Equal(3, spreadsheet.RowNumber);
+            Assert.Equal(2, Spreadsheet.ColumnsCount);
+            Assert.Equal(3, Spreadsheet.RowsCount);
         }
 
         [Theory]
@@ -60,9 +64,9 @@ namespace SpreadsheetCalculator.Tests
         [InlineData(1, 1)]
         public void GetCell_CellIsOutOfSpreadsheetBoundaries_ThrowArgumentException(int columnNumber, int rowNumber)
         {
-            var spreadsheet = new InMemorySpreadsheet(1, 1, ExpressionCalculatorMock.Object, StringParserMock.Object);
+            Spreadsheet.SetSize(1, 1);
 
-            Assert.Throws<InvalidOperationException>(() => spreadsheet.GetCell(rowNumber, columnNumber));
+            Assert.Throws<InvalidOperationException>(() => Spreadsheet.GetValue(rowNumber, columnNumber));
         }
 
         [Theory]
@@ -74,21 +78,21 @@ namespace SpreadsheetCalculator.Tests
         [InlineData(1, 1)]
         public void SetCell_CellIsOutOfSpreadsheetBoundaries_ThrowArgumentException(int columnNumber, int rowNumber)
         {
-            var spreadsheet = new InMemorySpreadsheet(1, 1, ExpressionCalculatorMock.Object, StringParserMock.Object);
+            Spreadsheet.SetSize(1, 1);
 
-            Assert.Throws<InvalidOperationException>(() => spreadsheet.SetCell(rowNumber, columnNumber, "x"));
+            Assert.Throws<InvalidOperationException>(() => Spreadsheet.SetValue(rowNumber, columnNumber, "x"));
         }
 
         [Fact]
         public void SetCell_CellValueButNotCalculate_GetCellInPendingState()
         {
-            var spreadsheet = new InMemorySpreadsheet(1, 1, ExpressionCalculatorMock.Object, StringParserMock.Object);
+            Spreadsheet.SetSize(1, 1);
 
             var cellValue = "dummy"; ;
 
-            spreadsheet.SetCell(0, 0, cellValue);
+            Spreadsheet.SetValue(0, 0, cellValue);
 
-            Assert.Equal("#PENDING!", spreadsheet.GetCell(0, 0));
+            Assert.Equal("#PENDING!", Spreadsheet.GetValue(0, 0));
         }
 
         [Fact]
@@ -99,13 +103,13 @@ namespace SpreadsheetCalculator.Tests
 
             string cellCoordinatesToString(int i, int j) => $"row: {i} column: {j}";
 
-            var spreadsheet = new InMemorySpreadsheet(rowNumber, columnNumber, ExpressionCalculatorMock.Object, StringParserMock.Object);
+            Spreadsheet.SetSize(rowNumber, columnNumber);
 
             for (int i = 0; i < rowNumber; i++)
             {
                 for (int j = 0; j < columnNumber; j++)
                 {
-                    spreadsheet.SetCell(i, j, cellCoordinatesToString(i, j));
+                    Spreadsheet.SetValue(i, j, cellCoordinatesToString(i, j));
                 }
             }
 
@@ -113,7 +117,7 @@ namespace SpreadsheetCalculator.Tests
             {
                 for (int j = 0; j < columnNumber; j++)
                 {
-                    Assert.Equal("#PENDING!", spreadsheet.GetCell(i, j));
+                    Assert.Equal("#PENDING!", Spreadsheet.GetValue(i, j));
                 }
             }
         }

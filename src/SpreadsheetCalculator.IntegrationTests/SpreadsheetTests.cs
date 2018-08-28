@@ -20,23 +20,25 @@ namespace SpreadsheetCalculator.IntegrationTests
         [Fact]
         public void Calculate_SpereadsheetWithoutCellReferences_AllCellsCalculated()
         {
-            var spreadsheet = new InMemorySpreadsheet(2, 3, Calculator, Parser);
+            var spreadsheet = new MathSpreadsheet(Calculator, Parser);
 
-            for (int row = 0; row < spreadsheet.RowNumber; row++)
+            spreadsheet.SetSize(2, 3);
+
+            for (int row = 0; row < spreadsheet.RowsCount; row++)
             {
-                for (int col = 0; col < spreadsheet.ColumnNumber; col++)
+                for (int col = 0; col < spreadsheet.ColumnsCount; col++)
                 {
-                    spreadsheet.SetCell(col, row, $"{col} {row} +");
+                    spreadsheet.SetValue(col, row, $"{col} {row} +");
                 }
             }
 
             spreadsheet.Calculate();
 
-            for (int row = 0; row < spreadsheet.RowNumber; row++)
+            for (int row = 0; row < spreadsheet.RowsCount; row++)
             {
-                for (int col = 0; col < spreadsheet.ColumnNumber; col++)
+                for (int col = 0; col < spreadsheet.ColumnsCount; col++)
                 {
-                    int result = int.Parse(spreadsheet.GetCell(col, row));
+                    int result = int.Parse(spreadsheet.GetValue(col, row));
 
                     Assert.Equal(col + row, result);
                 }
@@ -46,7 +48,9 @@ namespace SpreadsheetCalculator.IntegrationTests
         [Fact]
         public void Calculate_SpereadsheetWithCellReferencesOnly_AllCellsCalculated()
         {
-            var spreadsheet = new InMemorySpreadsheet(3, 2, Calculator, Parser);
+            var spreadsheet = new MathSpreadsheet(Calculator, Parser);
+
+            spreadsheet.SetSize(3, 2);
 
             /*
              *        A    |   B    |   C 
@@ -55,24 +59,24 @@ namespace SpreadsheetCalculator.IntegrationTests
              *  2 | C1 1 + | A2 1 + | B2 1 +  
              */
 
-            spreadsheet.SetCell(0, 0, "1");
-            spreadsheet.SetCell(1, 0, "A1 1 +");
-            spreadsheet.SetCell(2, 0, "B1 1 +");
-            spreadsheet.SetCell(0, 1, "C1 1 +");
-            spreadsheet.SetCell(1, 1, "A2 1 +");
-            spreadsheet.SetCell(2, 1, "B2 1 +");
+            spreadsheet.SetValue(0, 0, "1");
+            spreadsheet.SetValue(1, 0, "A1 1 +");
+            spreadsheet.SetValue(2, 0, "B1 1 +");
+            spreadsheet.SetValue(0, 1, "C1 1 +");
+            spreadsheet.SetValue(1, 1, "A2 1 +");
+            spreadsheet.SetValue(2, 1, "B2 1 +");
 
             spreadsheet.Calculate();
 
             int expected = 0;
 
-            for (int row = 0; row < spreadsheet.RowNumber; row++)
+            for (int row = 0; row < spreadsheet.RowsCount; row++)
             {
-                for (int col = 0; col < spreadsheet.ColumnNumber; col++)
+                for (int col = 0; col < spreadsheet.ColumnsCount; col++)
                 {
                     expected++;
 
-                    Assert.Equal(expected.ToString(), spreadsheet.GetCell(col, row));
+                    Assert.Equal(expected.ToString(), spreadsheet.GetValue(col, row));
                 }
             }
         }
@@ -81,7 +85,9 @@ namespace SpreadsheetCalculator.IntegrationTests
         [Fact]
         public void Calculate_TypicalSpereadsheet_AllCellsCalculated()
         {
-            var spreadsheet = new InMemorySpreadsheet(3, 2, Calculator, Parser);
+            var spreadsheet = new MathSpreadsheet(Calculator, Parser);
+
+            spreadsheet.SetSize(3, 2);
 
             /*
              *        A         |   B    |   C 
@@ -97,27 +103,29 @@ namespace SpreadsheetCalculator.IntegrationTests
              *  2 |   4  |  3  |  7.5
              */
 
-            spreadsheet.SetCell(0, 0, "B1");
-            spreadsheet.SetCell(1, 0, "3 2 *");
-            spreadsheet.SetCell(2, 0, "A1");
-            spreadsheet.SetCell(0, 1, "A1 B2 / 2 +");
-            spreadsheet.SetCell(1, 1, "3");
-            spreadsheet.SetCell(2, 1, "A2 B2 * 3 + 2 / ");
+            spreadsheet.SetValue(0, 0, "B1");
+            spreadsheet.SetValue(1, 0, "3 2 *");
+            spreadsheet.SetValue(2, 0, "A1");
+            spreadsheet.SetValue(0, 1, "A1 B2 / 2 +");
+            spreadsheet.SetValue(1, 1, "3");
+            spreadsheet.SetValue(2, 1, "A2 B2 * 3 + 2 / ");
 
             spreadsheet.Calculate();
 
-            Assert.Equal("6", spreadsheet.GetCell(0, 0));
-            Assert.Equal("6", spreadsheet.GetCell(1, 0));
-            Assert.Equal("6", spreadsheet.GetCell(2, 0));
-            Assert.Equal("4", spreadsheet.GetCell(0, 1));
-            Assert.Equal("3", spreadsheet.GetCell(1, 1));
-            Assert.Equal("7.5", spreadsheet.GetCell(2, 1));
+            Assert.Equal("6", spreadsheet.GetValue(0, 0));
+            Assert.Equal("6", spreadsheet.GetValue(1, 0));
+            Assert.Equal("6", spreadsheet.GetValue(2, 0));
+            Assert.Equal("4", spreadsheet.GetValue(0, 1));
+            Assert.Equal("3", spreadsheet.GetValue(1, 1));
+            Assert.Equal("7.5", spreadsheet.GetValue(2, 1));
         }
 
         [Fact]
         public void Calculate_SpereadsheetWithCircularReferences_ThrowSpreadsheetInternallException()
         {
-            var spreadsheet = new InMemorySpreadsheet(3, 1, Calculator, Parser);
+            var spreadsheet = new MathSpreadsheet(Calculator, Parser);
+
+            spreadsheet.SetSize(3, 1);
 
             /*
              *    |  A   |  B  |   C 
@@ -125,9 +133,9 @@ namespace SpreadsheetCalculator.IntegrationTests
              *  1 |  C1  |  1  |  A1   <--- Circular reference  
              */
 
-            spreadsheet.SetCell(0, 0, "C1");
-            spreadsheet.SetCell(1, 0, "1");
-            spreadsheet.SetCell(2, 0, "A1");
+            spreadsheet.SetValue(0, 0, "C1");
+            spreadsheet.SetValue(1, 0, "1");
+            spreadsheet.SetValue(2, 0, "A1");
             
             Assert.Throws<SpreadsheetInternallException>(() => spreadsheet.Calculate());
         }
@@ -135,7 +143,9 @@ namespace SpreadsheetCalculator.IntegrationTests
         [Fact]
         public void Calculate_InvalidCellReferenceInsSpereadsheet_ShowInvalidValueError()
         {
-            var spreadsheet = new InMemorySpreadsheet(3, 2, Calculator, Parser);
+            var spreadsheet = new MathSpreadsheet(Calculator, Parser);
+
+            spreadsheet.SetSize(3, 2);
 
             /*
              *    |   A   |  B  |   C 
@@ -144,28 +154,30 @@ namespace SpreadsheetCalculator.IntegrationTests
              *  2 |   C2  |  2  |  A99999999999999999999999999999999999999999   <--- Invalid Cell reference
              */
 
-            spreadsheet.SetCell(0, 0, "C1");
-            spreadsheet.SetCell(1, 0, "1");
-            spreadsheet.SetCell(2, 0, "A0");
-            spreadsheet.SetCell(0, 1, "C2");
-            spreadsheet.SetCell(1, 1, "2");
-            spreadsheet.SetCell(2, 1, "A99999999999999999999999999999999999999999");
+            spreadsheet.SetValue(0, 0, "C1");
+            spreadsheet.SetValue(1, 0, "1");
+            spreadsheet.SetValue(2, 0, "A0");
+            spreadsheet.SetValue(0, 1, "C2");
+            spreadsheet.SetValue(1, 1, "2");
+            spreadsheet.SetValue(2, 1, "A99999999999999999999999999999999999999999");
 
             spreadsheet.Calculate();
 
 
-            Assert.Equal("#VALUE!", spreadsheet.GetCell(0, 0));
-            Assert.Equal("1", spreadsheet.GetCell(1, 0));
-            Assert.Equal("#VALUE!", spreadsheet.GetCell(2, 0));
-            Assert.Equal("#VALUE!", spreadsheet.GetCell(0, 1));
-            Assert.Equal("2", spreadsheet.GetCell(1, 1));
-            Assert.Equal("#VALUE!", spreadsheet.GetCell(2, 1));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(0, 0));
+            Assert.Equal("1", spreadsheet.GetValue(1, 0));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(2, 0));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(0, 1));
+            Assert.Equal("2", spreadsheet.GetValue(1, 1));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(2, 1));
         }
 
         [Fact]
         public void Calculate_SpereadsheetWithInvalidMathematicalOperation_ShowNumberError()
         {
-            var spreadsheet = new InMemorySpreadsheet(3, 1, Calculator, Parser);
+            var spreadsheet = new MathSpreadsheet(Calculator, Parser);
+
+            spreadsheet.SetSize(3, 1);
 
             /*
              *    |  A   |    B    |  C 
@@ -173,21 +185,23 @@ namespace SpreadsheetCalculator.IntegrationTests
              *  1 |  0   |  2 A1 / |  B1 1 +   
              */
 
-            spreadsheet.SetCell(0, 0, "0");
-            spreadsheet.SetCell(1, 0, "2 A1 /");
-            spreadsheet.SetCell(2, 0, "B1 1 + ");
+            spreadsheet.SetValue(0, 0, "0");
+            spreadsheet.SetValue(1, 0, "2 A1 /");
+            spreadsheet.SetValue(2, 0, "B1 1 + ");
 
             spreadsheet.Calculate();
 
-            Assert.Equal("0", spreadsheet.GetCell(0, 0));
-            Assert.Equal("#NUM!", spreadsheet.GetCell(1, 0));
-            Assert.Equal("#VALUE!", spreadsheet.GetCell(2, 0));
+            Assert.Equal("0", spreadsheet.GetValue(0, 0));
+            Assert.Equal("#NUM!", spreadsheet.GetValue(1, 0));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(2, 0));
         }
 
         [Fact]
         public void Calculate_SpereadsheetWithInvalidDataInCell_ShowNumberError()
         {
-            var spreadsheet = new InMemorySpreadsheet(3, 2, Calculator, Parser);
+            var spreadsheet = new MathSpreadsheet(Calculator, Parser);
+
+            spreadsheet.SetSize(3, 2);
 
             /*
              *    |    A   |    B    |    C      |
@@ -196,27 +210,29 @@ namespace SpreadsheetCalculator.IntegrationTests
              *  2 |  1 + 1 |  1 2 3  |  1 2 + +
              */
 
-            spreadsheet.SetCell(0, 0, "BlaBla");
-            spreadsheet.SetCell(1, 0, "A1");
-            spreadsheet.SetCell(2, 0, "BlaBla 1 + ");
-            spreadsheet.SetCell(0, 1, "1 + 1");
-            spreadsheet.SetCell(1, 1, "1 2 3");
-            spreadsheet.SetCell(2, 1, "1 2 + +");
+            spreadsheet.SetValue(0, 0, "BlaBla");
+            spreadsheet.SetValue(1, 0, "A1");
+            spreadsheet.SetValue(2, 0, "BlaBla 1 + ");
+            spreadsheet.SetValue(0, 1, "1 + 1");
+            spreadsheet.SetValue(1, 1, "1 2 3");
+            spreadsheet.SetValue(2, 1, "1 2 + +");
 
             spreadsheet.Calculate();
 
-            Assert.Equal("#VALUE!", spreadsheet.GetCell(0, 0));
-            Assert.Equal("#VALUE!", spreadsheet.GetCell(1, 0));
-            Assert.Equal("#VALUE!", spreadsheet.GetCell(2, 0));
-            Assert.Equal("#VALUE!", spreadsheet.GetCell(0, 1));
-            Assert.Equal("#VALUE!", spreadsheet.GetCell(1, 1));
-            Assert.Equal("#VALUE!", spreadsheet.GetCell(2, 1));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(0, 0));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(1, 0));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(2, 0));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(0, 1));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(1, 1));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(2, 1));
         }
 
         [Fact]
         public void Calculate_SpereadsheetWithEmptyCell_CellsContainsDefaultValues() 
         {
-            var spreadsheet = new InMemorySpreadsheet(2, 1, Calculator, Parser);
+            var spreadsheet = new MathSpreadsheet(Calculator, Parser);
+
+            spreadsheet.SetSize(2, 1);
 
             /*
              *    |  A  |  B   |   
@@ -224,13 +240,13 @@ namespace SpreadsheetCalculator.IntegrationTests
              *  1 |     |      |
              */
 
-            spreadsheet.SetCell(0, 0, "");
-            spreadsheet.SetCell(1, 0, "");
+            spreadsheet.SetValue(0, 0, "");
+            spreadsheet.SetValue(1, 0, "");
 
             spreadsheet.Calculate();
 
-            Assert.Equal("0", spreadsheet.GetCell(0, 0));
-            Assert.Equal("0", spreadsheet.GetCell(1, 0));
+            Assert.Equal("0", spreadsheet.GetValue(0, 0));
+            Assert.Equal("0", spreadsheet.GetValue(1, 0));
         }
     }
 }

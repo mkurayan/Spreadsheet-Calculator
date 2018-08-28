@@ -1,4 +1,7 @@
-﻿using SpreadsheetCalculator.Spreadsheet;
+﻿using SpreadsheetCalculator.ExpressionCalculator;
+using SpreadsheetCalculator.ExpressionParser;
+using SpreadsheetCalculator.IO;
+using SpreadsheetCalculator.Spreadsheet;
 using System;
 using System.IO;
 
@@ -11,47 +14,46 @@ namespace SpreadsheetCalculator
             var inputFile = args.Length > 0 ? args[0] :null;
             var outputFile = args.Length > 1 ? args[1] : null;
 
-            InMemorySpreadsheet spreadsheet;
-            using (TextReader reader = GetTextReader(inputFile))
-            {
-                spreadsheet = new SpreadsheetReader(reader).Read();
-            }
+            MathSpreadsheet spreadsheet = new MathSpreadsheet(new InfixNotationCalculator(), new StringParser());
+
+            var reader = GetTextReader(inputFile);
 
             try
             {
+                reader.Read(spreadsheet);
+
+                Console.WriteLine("Calculating spreadsheet...");
+                Console.WriteLine(string.Empty);
+
                 spreadsheet.Calculate();
             }
-            catch (SpreadsheetInternallException ex)
+            catch (Exception ex) when (ex is SpreadsheetFormatException || ex is SpreadsheetInternallException)
             {
-                // Report about exception which occurred during spreadsheet calculation and close application.
                 Console.WriteLine(ex.Message);
                 return;
             }
 
-            using (TextWriter writer = GetTextWriter(outputFile))
-            {
-                new SpreadsheetWriter(writer).Write(spreadsheet);
-            }
+            GetTextWriter(outputFile).Write(spreadsheet);
         }
 
-        private static TextReader GetTextReader(string inputFile)
+        private static IInputStreamReader GetTextReader(string inputFile)
         {
             if (string.IsNullOrEmpty(inputFile))
             {
-                return Console.In;
+                return new ConsoleInput();
             }
 
-            return new StreamReader(new FileStream(inputFile, FileMode.Open));
+            return new FileInput(inputFile);
         }
 
-        private static TextWriter GetTextWriter(string outputFile)
+        private static IOutputStreamWriter GetTextWriter(string outputFile)
         {
             if (string.IsNullOrEmpty(outputFile))
             {
-                return Console.Out;
+                return new ConsoleOutput();
             }
-
-            return new StreamWriter(new FileStream(outputFile, FileMode.OpenOrCreate));
+            
+            return new FileOutput(outputFile);
         }
     }
 }
