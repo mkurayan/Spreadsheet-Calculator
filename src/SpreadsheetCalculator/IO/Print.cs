@@ -1,4 +1,5 @@
 ﻿using SpreadsheetCalculator.Spreadsheet;
+using SpreadsheetCalculator.Utils;
 using System.Linq;
 using System.Text;
 
@@ -8,8 +9,15 @@ namespace SpreadsheetCalculator.IO
     {
         public string PrintSpreadsheet(IViewSpreadsheet spreadsheet)
         {
+            VirtualSpreadsheet view = new VirtualSpreadsheet(spreadsheet);
+
+            return PrintContent(view);
+        }
+
+        public string PrintContent(IViewSpreadsheet spreadsheet)
+        {
             var columnsLength =
-              Enumerable.Range(0, spreadsheet.ColumnsCount)
+              Enumerable.Range(1, spreadsheet.ColumnsCount)
                   .Select(column =>
                       GetColumn(spreadsheet, column).Max(value => value.Length)
                   ).ToArray();
@@ -26,7 +34,7 @@ namespace SpreadsheetCalculator.IO
 
             builder.AppendLine(divider);
 
-            for (var i = 0; i < spreadsheet.RowsCount; i++)
+            for (var i = 1; i <= spreadsheet.RowsCount; i++)
             {
                 builder.AppendLine(string.Format(format, GetRow(spreadsheet, i)));
                 builder.AppendLine(divider);
@@ -37,7 +45,7 @@ namespace SpreadsheetCalculator.IO
 
         private string[] GetRow(IViewSpreadsheet spreadsheet, int rowIndex)
         {
-            return Enumerable.Range(0, spreadsheet.ColumnsCount)
+            return Enumerable.Range(1, spreadsheet.ColumnsCount)
                         .Select(columnIndex => spreadsheet.GetValue(columnIndex, rowIndex))
                         .ToArray();
 
@@ -45,9 +53,43 @@ namespace SpreadsheetCalculator.IO
 
         private string[] GetColumn(IViewSpreadsheet spreadsheet, int columnIndex)
         {
-            return Enumerable.Range(0, spreadsheet.RowsCount)
+            return Enumerable.Range(1, spreadsheet.RowsCount)
                         .Select(rowIndex => spreadsheet.GetValue(columnIndex, rowIndex))
                         .ToArray();
+        }
+
+        class VirtualSpreadsheet : IViewSpreadsheet
+        {
+            private IViewSpreadsheet View { get; }
+
+            public int ColumnsCount => View.ColumnsCount + 1;
+
+            public int RowsCount => View.RowsCount + 1;
+
+            public VirtualSpreadsheet(IViewSpreadsheet view)
+            {
+                View = view;
+            }
+
+            public string GetValue(int columnIndex, int rowIndex)
+            {
+                if (columnIndex == 1 && rowIndex == 1)
+                {
+                    return "/";
+                }
+
+                if (rowIndex == 1)
+                {
+                    return AlphabetConvertor.IntToLetters(columnIndex - 1);
+                }
+
+                if (columnIndex == 1)
+                {
+                    return (rowIndex - 1).ToString();
+                }
+
+                return View.GetValue(columnIndex - 1, rowIndex - 1);
+            }
         }
     }
 }

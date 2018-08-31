@@ -51,7 +51,6 @@ namespace SpreadsheetCalculator.Tests.Tokens
         [InlineData(")")]
         [InlineData("A")]
         [InlineData("AB")]
-        [InlineData("AA2")] // <--- Looks like Ref but we support only one letter in reference.
         public void Parse_NotCellreference_DoesNotContainCellreferenceToken(string value)
         {
             Assert.DoesNotContain(Parser.Parse(value), token => token.Type == TokenType.CellReference);
@@ -59,6 +58,8 @@ namespace SpreadsheetCalculator.Tests.Tokens
 
         [Theory]
         [InlineData("A1")]
+        [InlineData("AA1")]
+        [InlineData("ABCD1")]
         [InlineData("A123456789")]
         public void CreateNewCellToken_CellReference_ContainsCellReferenceToken(string value)
         {
@@ -148,7 +149,6 @@ namespace SpreadsheetCalculator.Tests.Tokens
 
         [Theory]
         [InlineData("AB")]
-        [InlineData("AA2")]
         [InlineData("A1B")]
         [InlineData("?")]
         [InlineData("^")]

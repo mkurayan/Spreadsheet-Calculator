@@ -15,18 +15,17 @@ namespace SpreadsheetCalculator.Spreadsheet
         /// <summary>
         /// Define maximum possible rows in Spreadsheet.
         /// </summary>
-        private const int MaxRowNumber = 1000000;
+        private const int MaxRowNumber = 999999;
 
         /// <summary>
         /// Define maximum possible columns in Spreadsheet.
-        /// Currently it limited because for columns we use only single letter [A-Z].
         /// </summary>
-        private const int MaxColumnNumber = 26;
+        private const int MaxColumnNumber = 18278; // "ZZZ"
 
         /// <summary>
         /// Spreadsheet Cells.
         /// </summary>
-        private ICell[,] Cells { get; set; }
+        private Matrix<ICell> Matrix { get; set; }
 
         /// <summary>
         /// Spreadsheet cell evaluator.
@@ -41,12 +40,12 @@ namespace SpreadsheetCalculator.Spreadsheet
         /// <summary>
         /// Implements <see cref="IViewSpreadsheet.RowsCount"/>.
         /// </summary>
-        public int RowsCount => Cells.GetLength(1);
+        public int RowsCount => Matrix.RowsCount;
 
         /// <summary>
         /// Implements <see cref="IViewSpreadsheet.ColumnsCount"/>.
         /// </summary>
-        public int ColumnsCount => Cells.GetLength(0);
+        public int ColumnsCount => Matrix.ColumnsCount;
 
         /// <summary>
         /// Create new Spreadsheet.
@@ -65,43 +64,49 @@ namespace SpreadsheetCalculator.Spreadsheet
         /// </summary>
         public void SetSize(int columnNumber, int rowNumber)
         {
-            if (!IsInRange(columnNumber, 1, MaxColumnNumber))
+            if (columnNumber > MaxColumnNumber)
             {
-                throw new ArgumentException("Invalid column number.");
+                throw new IndexOutOfRangeException($"Spreadsheet is to big. Max allowed columns {MaxColumnNumber}");
             }
 
-            if (!IsInRange(rowNumber, 1, MaxRowNumber))
+            if (rowNumber > MaxRowNumber)
             {
-                throw new ArgumentException("Invalid row number.");
+                throw new IndexOutOfRangeException($"Spreadsheet is to big. Max allowed rows {MaxRowNumber}");
             }
 
-            Cells = new ICell[columnNumber, rowNumber];
+            if (columnNumber <= 0 || rowNumber <= 0)
+            {
+                throw new IndexOutOfRangeException($"Invalid spreadsheet size {columnNumber} x {rowNumber}");
+            }
+
+            Matrix = new Matrix<ICell>(columnNumber, rowNumber);
         }
 
         /// <summary>
         /// Implements <see cref="IEditSpreadsheet.SetValue"/>.
         /// </summary>
-        public void SetValue(int columnNumber, int rowNumber, string value)
+        public void SetValue(int column, int row, string value)
         {
-            if (!IsCellInSpreadsheet(columnNumber, rowNumber))
+            if (Matrix.InMatrix(column, row))
             {
-                throw new InvalidOperationException("Requested cell is out of spreadsheet.");
+                Matrix[column, row] = new Cell(StringParser.Parse(value));
+                return;
             }
 
-            Cells[columnNumber, rowNumber] = new Cell(StringParser.Parse(value));
+            throw new IndexOutOfRangeException("Requested cell is out of spreadsheet.");
         }
 
         /// <summary>
         /// Implements <see cref="IViewSpreadsheet.GetValue"/>.
         /// </summary>
-        public string GetValue(int columnIndex, int rowIndex)
+        public string GetValue(int column, int row)
         {
-            if (!IsCellInSpreadsheet(columnIndex, rowIndex))
+            if (Matrix.InMatrix(column, row))
             {
-                throw new InvalidOperationException("Requested cell is out of spreadsheet.");
+                return Matrix[column, row].ToString();
             }
 
-            return Cells[columnIndex, rowIndex].ToString();
+            throw new IndexOutOfRangeException("Requested cell is out of spreadsheet.");   
         }
 
         /// <summary>
@@ -115,7 +120,7 @@ namespace SpreadsheetCalculator.Spreadsheet
             try
             {
                 sortedCells = TopologicalSort.Sort(
-                    SpreadsheetCells(),
+                    Matrix.AsEnumerable(),
                     cell => cell.CellDependencies
                         .Select(cellRef => GetCellByKey(cellRef.Value))
                         .Where(reff => reff != null)
@@ -140,21 +145,12 @@ namespace SpreadsheetCalculator.Spreadsheet
         /// <returns></returns>
         private ICell GetCellByKey(string key)
         {
-            // Convert alphabetic character to index.
-            int colIndex = key[0] - 65;
+            var position = new CellPosition(key);
 
-            // Check for Int32 overflow.
-            if (int.TryParse(key.Substring(1), out int rowIndex))
+            // Check that cell reference inside current spreadsheet
+            if (position.IsValid && Matrix.InMatrix(position.ColumnIndex, position.RowIndex))
             {
-                // For spreadsheet rows we begin numbering from one ( A1, A2, etc...)
-                // So, in order to translate it to spreadsheet inner array we subtract 1 from row number.
-                rowIndex--;
-
-                // Check that result column & row indexes is inside current spreadsheet
-                if (IsCellInSpreadsheet(colIndex, rowIndex))
-                {
-                    return Cells[colIndex, rowIndex];
-                }
+                return Matrix[position.ColumnIndex, position.RowIndex];
             }
 
             return null;
@@ -216,22 +212,5 @@ namespace SpreadsheetCalculator.Spreadsheet
                 }
             }
         }
-
-        private IEnumerable<ICell> SpreadsheetCells()
-        {
-            for (int col = 0; col < ColumnsCount; col++)
-            {
-                for (int row = 0; row < RowsCount; row++)
-                {
-                    yield return Cells[col, row];
-                }
-            }
-        }
-
-        private bool IsCellDependenciesMissied(ICell cell) => cell.CellDependencies.Select(token => GetCellByKey(token.Value)).Any(c => c == null);
-
-        private bool IsCellInSpreadsheet(int colIndex, int rowIndex) => IsInRange(colIndex, 0, ColumnsCount - 1) && IsInRange(rowIndex, 0, RowsCount - 1);
-
-        private static bool IsInRange(int target, int start, int end) => target >= start && target <= end;
     }
 }

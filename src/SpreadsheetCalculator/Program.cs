@@ -3,7 +3,6 @@ using SpreadsheetCalculator.ExpressionParser;
 using SpreadsheetCalculator.IO;
 using SpreadsheetCalculator.Spreadsheet;
 using System;
-using System.IO;
 
 namespace SpreadsheetCalculator
 {

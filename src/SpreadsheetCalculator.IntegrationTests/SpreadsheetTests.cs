@@ -24,9 +24,9 @@ namespace SpreadsheetCalculator.IntegrationTests
 
             spreadsheet.SetSize(2, 3);
 
-            for (int row = 0; row < spreadsheet.RowsCount; row++)
+            for (int row = 1; row <= spreadsheet.RowsCount; row++)
             {
-                for (int col = 0; col < spreadsheet.ColumnsCount; col++)
+                for (int col = 1; col <= spreadsheet.ColumnsCount; col++)
                 {
                     spreadsheet.SetValue(col, row, $"{col} {row} +");
                 }
@@ -34,9 +34,9 @@ namespace SpreadsheetCalculator.IntegrationTests
 
             spreadsheet.Calculate();
 
-            for (int row = 0; row < spreadsheet.RowsCount; row++)
+            for (int row = 1; row <= spreadsheet.RowsCount; row++)
             {
-                for (int col = 0; col < spreadsheet.ColumnsCount; col++)
+                for (int col = 1; col <= spreadsheet.ColumnsCount; col++)
                 {
                     int result = int.Parse(spreadsheet.GetValue(col, row));
 
@@ -59,20 +59,20 @@ namespace SpreadsheetCalculator.IntegrationTests
              *  2 | C1 1 + | A2 1 + | B2 1 +  
              */
 
-            spreadsheet.SetValue(0, 0, "1");
-            spreadsheet.SetValue(1, 0, "A1 1 +");
-            spreadsheet.SetValue(2, 0, "B1 1 +");
-            spreadsheet.SetValue(0, 1, "C1 1 +");
-            spreadsheet.SetValue(1, 1, "A2 1 +");
-            spreadsheet.SetValue(2, 1, "B2 1 +");
+            spreadsheet.SetValue(1, 1, "1");
+            spreadsheet.SetValue(2, 1, "A1 1 +");
+            spreadsheet.SetValue(3, 1, "B1 1 +");
+            spreadsheet.SetValue(1, 2, "C1 1 +");
+            spreadsheet.SetValue(2, 2, "A2 1 +");
+            spreadsheet.SetValue(3, 2, "B2 1 +");
 
             spreadsheet.Calculate();
 
             int expected = 0;
 
-            for (int row = 0; row < spreadsheet.RowsCount; row++)
+            for (int row = 1; row <= spreadsheet.RowsCount; row++)
             {
-                for (int col = 0; col < spreadsheet.ColumnsCount; col++)
+                for (int col = 1; col <= spreadsheet.ColumnsCount; col++)
                 {
                     expected++;
 
@@ -103,21 +103,21 @@ namespace SpreadsheetCalculator.IntegrationTests
              *  2 |   4  |  3  |  7.5
              */
 
-            spreadsheet.SetValue(0, 0, "B1");
-            spreadsheet.SetValue(1, 0, "3 2 *");
-            spreadsheet.SetValue(2, 0, "A1");
-            spreadsheet.SetValue(0, 1, "A1 B2 / 2 +");
-            spreadsheet.SetValue(1, 1, "3");
-            spreadsheet.SetValue(2, 1, "A2 B2 * 3 + 2 / ");
+            spreadsheet.SetValue(1, 1, "B1");
+            spreadsheet.SetValue(2, 1, "3 2 *");
+            spreadsheet.SetValue(3, 1, "A1");
+            spreadsheet.SetValue(1, 2, "A1 B2 / 2 +");
+            spreadsheet.SetValue(2, 2, "3");
+            spreadsheet.SetValue(3, 2, "A2 B2 * 3 + 2 / ");
 
             spreadsheet.Calculate();
 
-            Assert.Equal("6", spreadsheet.GetValue(0, 0));
-            Assert.Equal("6", spreadsheet.GetValue(1, 0));
-            Assert.Equal("6", spreadsheet.GetValue(2, 0));
-            Assert.Equal("4", spreadsheet.GetValue(0, 1));
-            Assert.Equal("3", spreadsheet.GetValue(1, 1));
-            Assert.Equal("7.5", spreadsheet.GetValue(2, 1));
+            Assert.Equal("6", spreadsheet.GetValue(1, 1));
+            Assert.Equal("6", spreadsheet.GetValue(2, 1));
+            Assert.Equal("6", spreadsheet.GetValue(3, 1));
+            Assert.Equal("4", spreadsheet.GetValue(1, 2));
+            Assert.Equal("3", spreadsheet.GetValue(2, 2));
+            Assert.Equal("7.5", spreadsheet.GetValue(3, 2));
         }
 
         [Fact]
@@ -133,9 +133,9 @@ namespace SpreadsheetCalculator.IntegrationTests
              *  1 |  C1  |  1  |  A1   <--- Circular reference  
              */
 
-            spreadsheet.SetValue(0, 0, "C1");
-            spreadsheet.SetValue(1, 0, "1");
-            spreadsheet.SetValue(2, 0, "A1");
+            spreadsheet.SetValue(1, 1, "C1");
+            spreadsheet.SetValue(2, 1, "1");
+            spreadsheet.SetValue(3, 1, "A1");
             
             Assert.Throws<SpreadsheetInternallException>(() => spreadsheet.Calculate());
         }
@@ -154,22 +154,22 @@ namespace SpreadsheetCalculator.IntegrationTests
              *  2 |   C2  |  2  |  A99999999999999999999999999999999999999999   <--- Invalid Cell reference
              */
 
-            spreadsheet.SetValue(0, 0, "C1");
-            spreadsheet.SetValue(1, 0, "1");
-            spreadsheet.SetValue(2, 0, "A0");
-            spreadsheet.SetValue(0, 1, "C2");
-            spreadsheet.SetValue(1, 1, "2");
-            spreadsheet.SetValue(2, 1, "A99999999999999999999999999999999999999999");
+            spreadsheet.SetValue(1, 1, "C1");
+            spreadsheet.SetValue(2, 1, "1");
+            spreadsheet.SetValue(3, 1, "A0");
+            spreadsheet.SetValue(1, 2, "C2");
+            spreadsheet.SetValue(2, 2, "2");
+            spreadsheet.SetValue(3, 2, "A99999999999999999999999999999999999999999");
 
             spreadsheet.Calculate();
 
 
-            Assert.Equal("#VALUE!", spreadsheet.GetValue(0, 0));
-            Assert.Equal("1", spreadsheet.GetValue(1, 0));
-            Assert.Equal("#VALUE!", spreadsheet.GetValue(2, 0));
-            Assert.Equal("#VALUE!", spreadsheet.GetValue(0, 1));
-            Assert.Equal("2", spreadsheet.GetValue(1, 1));
-            Assert.Equal("#VALUE!", spreadsheet.GetValue(2, 1));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(1, 1));
+            Assert.Equal("1", spreadsheet.GetValue(2, 1));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(3, 1));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(1, 2));
+            Assert.Equal("2", spreadsheet.GetValue(2, 2));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(3, 2));
         }
 
         [Fact]
@@ -185,15 +185,15 @@ namespace SpreadsheetCalculator.IntegrationTests
              *  1 |  0   |  2 A1 / |  B1 1 +   
              */
 
-            spreadsheet.SetValue(0, 0, "0");
-            spreadsheet.SetValue(1, 0, "2 A1 /");
-            spreadsheet.SetValue(2, 0, "B1 1 + ");
+            spreadsheet.SetValue(1, 1, "0");
+            spreadsheet.SetValue(2, 1, "2 A1 /");
+            spreadsheet.SetValue(3, 1, "B1 1 + ");
 
             spreadsheet.Calculate();
 
-            Assert.Equal("0", spreadsheet.GetValue(0, 0));
-            Assert.Equal("#NUM!", spreadsheet.GetValue(1, 0));
-            Assert.Equal("#VALUE!", spreadsheet.GetValue(2, 0));
+            Assert.Equal("0", spreadsheet.GetValue(1, 1));
+            Assert.Equal("#NUM!", spreadsheet.GetValue(2, 1));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(3, 1));
         }
 
         [Fact]
@@ -210,21 +210,21 @@ namespace SpreadsheetCalculator.IntegrationTests
              *  2 |  1 + 1 |  1 2 3  |  1 2 + +
              */
 
-            spreadsheet.SetValue(0, 0, "BlaBla");
-            spreadsheet.SetValue(1, 0, "A1");
-            spreadsheet.SetValue(2, 0, "BlaBla 1 + ");
-            spreadsheet.SetValue(0, 1, "1 + 1");
-            spreadsheet.SetValue(1, 1, "1 2 3");
-            spreadsheet.SetValue(2, 1, "1 2 + +");
+            spreadsheet.SetValue(1, 1, "BlaBla");
+            spreadsheet.SetValue(2, 1, "A1");
+            spreadsheet.SetValue(3, 1, "BlaBla 1 + ");
+            spreadsheet.SetValue(1, 2, "1 + 1");
+            spreadsheet.SetValue(2, 2, "1 2 3");
+            spreadsheet.SetValue(3, 2, "1 2 + +");
 
             spreadsheet.Calculate();
 
-            Assert.Equal("#VALUE!", spreadsheet.GetValue(0, 0));
-            Assert.Equal("#VALUE!", spreadsheet.GetValue(1, 0));
-            Assert.Equal("#VALUE!", spreadsheet.GetValue(2, 0));
-            Assert.Equal("#VALUE!", spreadsheet.GetValue(0, 1));
             Assert.Equal("#VALUE!", spreadsheet.GetValue(1, 1));
             Assert.Equal("#VALUE!", spreadsheet.GetValue(2, 1));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(3, 1));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(1, 2));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(2, 2));
+            Assert.Equal("#VALUE!", spreadsheet.GetValue(3, 2));
         }
 
         [Fact]
@@ -240,13 +240,13 @@ namespace SpreadsheetCalculator.IntegrationTests
              *  1 |     |      |
              */
 
-            spreadsheet.SetValue(0, 0, "");
-            spreadsheet.SetValue(1, 0, "");
+            spreadsheet.SetValue(1, 1, "");
+            spreadsheet.SetValue(2, 1, "");
 
             spreadsheet.Calculate();
 
-            Assert.Equal("0", spreadsheet.GetValue(0, 0));
-            Assert.Equal("0", spreadsheet.GetValue(1, 0));
+            Assert.Equal("0", spreadsheet.GetValue(1, 1));
+            Assert.Equal("0", spreadsheet.GetValue(2, 1));
         }
     }
 }

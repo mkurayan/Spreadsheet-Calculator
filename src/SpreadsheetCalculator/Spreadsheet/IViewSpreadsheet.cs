@@ -15,8 +15,8 @@
         /// <summary>
         /// Get value from spreadsheet cell.
         /// </summary>
-        /// <param name="columnIndex">Column index in spreadsheet.</param>
-        /// <param name="rowNumber">Row index in spreadsheet.</param>
-        string GetValue(int columnIndex, int rowIndex);
+        /// <param name="column">Column index in spreadsheet.</param>
+        /// <param name="row">Row index in spreadsheet.</param>
+        string GetValue(int column, int row);
     }
 }

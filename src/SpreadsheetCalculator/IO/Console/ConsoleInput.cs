@@ -1,4 +1,5 @@
 ﻿using SpreadsheetCalculator.Spreadsheet;
+using SpreadsheetCalculator.Utils;
 using System;
 
 namespace SpreadsheetCalculator.IO
@@ -32,15 +33,17 @@ namespace SpreadsheetCalculator.IO
             var left = Console.CursorLeft;
             var top = Console.CursorTop;
 
-            for (var rowNumber = 0; rowNumber < rowsCount; rowNumber++)
+            for (var rowNumber = 1; rowNumber <= rowsCount; rowNumber++)
             {
-                for (var columnNumber = 0; columnNumber < columnsCount; columnNumber++)
+                for (var columnNumber = 1; columnNumber <= columnsCount; columnNumber++)
                 {
                     CleanConsole();
 
                     Console.WriteLine(print.PrintSpreadsheet(textSpreadsheet));
 
-                    Console.Write($"Please enter {CellReferenceHelper.ToKey(columnNumber, rowNumber)}: ");
+                    var posotion = new CellPosition(columnNumber, rowNumber);
+
+                    Console.Write($"Please enter { posotion }: ");
                     var cellValue = Console.ReadLine();
 
                     spreadsheet.SetValue(columnNumber, rowNumber, cellValue);
@@ -63,25 +66,25 @@ namespace SpreadsheetCalculator.IO
 
         class TextSpreadsheet : IViewSpreadsheet, IEditSpreadsheet
         {
-            private string[,] cells;
+            private Matrix<string> Matrix;
 
-            public int ColumnsCount => cells.GetLength(0);
+            public int ColumnsCount => Matrix.ColumnsCount;
 
-            public int RowsCount => cells.GetLength(1);
+            public int RowsCount => Matrix.RowsCount;
 
-            public string GetValue(int columnIndex, int rowIndex)
+            public string GetValue(int column, int row)
             {
-                return cells[columnIndex, rowIndex] ?? string.Empty;
+                return Matrix[column, row] ?? string.Empty;
             }
 
             public void SetSize(int columnsCount, int rowsCount)
             {
-                cells = new string[columnsCount, rowsCount];
+                Matrix = new Matrix<string>(columnsCount, rowsCount);
             }
 
-            public void SetValue(int columnIndex, int rowIndex, string value)
+            public void SetValue(int column, int row, string value)
             {
-                cells[columnIndex, rowIndex] = value;
+                Matrix[column, row] = value;
             }
         }
     }

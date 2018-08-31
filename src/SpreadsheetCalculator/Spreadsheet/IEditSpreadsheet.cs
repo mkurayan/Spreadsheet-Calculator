@@ -12,9 +12,9 @@
         /// <summary>
         /// Set cell value in spreadsheet.
         /// </summary>
-        /// <param name="columnNumber">Column number.</param>
-        /// <param name="rowNumber">Row number.</param>
+        /// <param name="column">Column number.</param>
+        /// <param name="row">Row number.</param>
         /// <param name="value">Cell value.</param>
-        void SetValue(int columnIndex, int rowIndex, string value);
+        void SetValue(int column, int row, string value);
     }
 }

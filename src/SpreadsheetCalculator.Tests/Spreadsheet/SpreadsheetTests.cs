@@ -29,9 +29,9 @@ namespace SpreadsheetCalculator.Tests
         [InlineData(1, 0)]
         [InlineData(1, -1)]
         [InlineData(1, 1000001)]
-        public void SpreadsheetConstructor_InvalidSize_ThrowArgumentException(int rowNumber, int columnNumber)
+        public void SpreadsheetConstructor_InvalidSize_ThrowIndexOutOfRangeException(int rowNumber, int columnNumber)
         {
-            Assert.Throws<ArgumentException>(() => Spreadsheet.SetSize(columnNumber, rowNumber));
+            Assert.Throws<IndexOutOfRangeException>(() => Spreadsheet.SetSize(columnNumber, rowNumber));
         }
 
         [Fact]
@@ -57,30 +57,30 @@ namespace SpreadsheetCalculator.Tests
 
         [Theory]
         [InlineData(-1, -1)]
-        [InlineData(0, -1)]
-        [InlineData(-1, 0)]
+        [InlineData(1, -1)]
+        [InlineData(-1, 1)]
         [InlineData(0, 1)]
         [InlineData(1, 0)]
-        [InlineData(1, 1)]
-        public void GetCell_CellIsOutOfSpreadsheetBoundaries_ThrowArgumentException(int columnNumber, int rowNumber)
+        [InlineData(0, 0)]
+        public void GetCell_CellIsOutOfSpreadsheetBoundaries_ThrowIndexOutOfRangeException(int columnNumber, int rowNumber)
         {
             Spreadsheet.SetSize(1, 1);
 
-            Assert.Throws<InvalidOperationException>(() => Spreadsheet.GetValue(rowNumber, columnNumber));
+            Assert.Throws<IndexOutOfRangeException>(() => Spreadsheet.GetValue(rowNumber, columnNumber));
         }
 
         [Theory]
-        [InlineData(-1, -1)]
-        [InlineData(0, -1)]
-        [InlineData(-1, 0)]
+        [InlineData(-1, 1)]
+        [InlineData(1, -1)]
+        [InlineData(-1, 1)]
         [InlineData(0, 1)]
         [InlineData(1, 0)]
-        [InlineData(1, 1)]
-        public void SetCell_CellIsOutOfSpreadsheetBoundaries_ThrowArgumentException(int columnNumber, int rowNumber)
+        [InlineData(0, 0)]
+        public void SetCell_CellIsOutOfSpreadsheetBoundaries_ThrowIndexOutOfRangeException(int columnNumber, int rowNumber)
         {
             Spreadsheet.SetSize(1, 1);
 
-            Assert.Throws<InvalidOperationException>(() => Spreadsheet.SetValue(rowNumber, columnNumber, "x"));
+            Assert.Throws<IndexOutOfRangeException>(() => Spreadsheet.SetValue(rowNumber, columnNumber, "x"));
         }
 
         [Fact]
@@ -90,9 +90,9 @@ namespace SpreadsheetCalculator.Tests
 
             var cellValue = "dummy"; ;
 
-            Spreadsheet.SetValue(0, 0, cellValue);
+            Spreadsheet.SetValue(1, 1, cellValue);
 
-            Assert.Equal("#PENDING!", Spreadsheet.GetValue(0, 0));
+            Assert.Equal("#PENDING!", Spreadsheet.GetValue(1, 1));
         }
 
         [Fact]
@@ -105,17 +105,17 @@ namespace SpreadsheetCalculator.Tests
 
             Spreadsheet.SetSize(rowNumber, columnNumber);
 
-            for (int i = 0; i < rowNumber; i++)
+            for (int i = 1; i <= rowNumber; i++)
             {
-                for (int j = 0; j < columnNumber; j++)
+                for (int j = 1; j <= columnNumber; j++)
                 {
                     Spreadsheet.SetValue(i, j, cellCoordinatesToString(i, j));
                 }
             }
 
-            for (int i = 0; i < rowNumber; i++)
+            for (int i = 1; i <= rowNumber; i++)
             {
-                for (int j = 0; j < columnNumber; j++)
+                for (int j = 1; j <= columnNumber; j++)
                 {
                     Assert.Equal("#PENDING!", Spreadsheet.GetValue(i, j));
                 }

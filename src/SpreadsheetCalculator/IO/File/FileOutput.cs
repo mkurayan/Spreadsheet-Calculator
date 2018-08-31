@@ -21,9 +21,9 @@ namespace SpreadsheetCalculator.IO
             {
                 sOut.WriteLine("{0} {1}", spreadsheet.ColumnsCount, spreadsheet.RowsCount);
 
-                for (var rowNumber = 0; rowNumber < spreadsheet.RowsCount; rowNumber++)
+                for (var rowNumber = 1; rowNumber < spreadsheet.RowsCount; rowNumber++)
                 {
-                    for (var columnNumber = 0; columnNumber < spreadsheet.ColumnsCount; columnNumber++)
+                    for (var columnNumber = 1; columnNumber < spreadsheet.ColumnsCount; columnNumber++)
                     {
                         sOut.WriteLine(spreadsheet.GetValue(rowNumber, columnNumber));
                     }

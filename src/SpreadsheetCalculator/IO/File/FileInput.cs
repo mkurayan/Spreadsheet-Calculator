@@ -24,9 +24,9 @@ namespace SpreadsheetCalculator.IO
 
                 spreadsheet.SetSize(columnsCount, rowsCount);
 
-                for (var rowNumber = 0; rowNumber < rowsCount; rowNumber++)
+                for (var rowNumber = 1; rowNumber <= rowsCount; rowNumber++)
                 {
-                    for (var columnNumber = 0; columnNumber < columnsCount; columnNumber++)
+                    for (var columnNumber = 0; columnNumber <= columnsCount; columnNumber++)
                     {
                         var cellValue = sIn.ReadLine();
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
+using SpreadsheetCalculator.Spreadsheet;
 
 namespace SpreadsheetCalculator.ExpressionParser
 {
@@ -10,9 +10,6 @@ namespace SpreadsheetCalculator.ExpressionParser
     /// </summary>
     class StringParser : IStringParser
     {
-        // This pattern check if token is reference to another cell in spreadsheet.
-        private static readonly Regex CellReferencePattern = new Regex(@"^[A-Z]\d+$");
-
         private HashSet<string> Operators = new HashSet<string> { "+", "-", "*", "/" };
 
         public IEnumerable<Token> Parse(string input) => input
@@ -21,11 +18,6 @@ namespace SpreadsheetCalculator.ExpressionParser
 
         private TokenType GetTokenType(string token)
         {
-            if (CellReferencePattern.IsMatch(token))
-            {
-                return TokenType.CellReference;
-            }
-
             if (token == "(" || token == ")")
             {
                 return TokenType.RoundBracket;
@@ -39,6 +31,11 @@ namespace SpreadsheetCalculator.ExpressionParser
             if (double.TryParse(token, out double value))
             {
                 return TokenType.Number;
+            }
+
+            if (CellPosition.IsCellPosition(token))
+            {
+                return TokenType.CellReference;
             }
 
             return TokenType.Unknown;
