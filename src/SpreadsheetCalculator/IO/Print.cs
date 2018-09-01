@@ -71,24 +71,31 @@ namespace SpreadsheetCalculator.IO
                 View = view;
             }
 
-            public string GetValue(int columnIndex, int rowIndex)
+            public string GetValue(string key)
             {
-                if (columnIndex == 1 && rowIndex == 1)
+                var position = new CellPosition(key);
+
+                return GetValue(position.Column, position.Row);
+            }
+
+            public string GetValue(int column, int row)
+            {
+                if (column == 1 && row == 1)
                 {
                     return "/";
                 }
 
-                if (rowIndex == 1)
+                if (row == 1)
                 {
-                    return AlphabetConvertor.IntToLetters(columnIndex - 1);
+                    return AlphabetConvertor.IntToLetters(column - 1);
                 }
 
-                if (columnIndex == 1)
+                if (column == 1)
                 {
-                    return (rowIndex - 1).ToString();
+                    return (row - 1).ToString();
                 }
 
-                return View.GetValue(columnIndex - 1, rowIndex - 1);
+                return View.GetValue(column - 1, row - 1);
             }
         }
     }

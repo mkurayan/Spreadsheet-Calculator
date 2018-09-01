@@ -103,21 +103,21 @@ namespace SpreadsheetCalculator.IntegrationTests
              *  2 |   4  |  3  |  7.5
              */
 
-            spreadsheet.SetValue(1, 1, "B1");
-            spreadsheet.SetValue(2, 1, "3 2 *");
-            spreadsheet.SetValue(3, 1, "A1");
-            spreadsheet.SetValue(1, 2, "A1 B2 / 2 +");
-            spreadsheet.SetValue(2, 2, "3");
-            spreadsheet.SetValue(3, 2, "A2 B2 * 3 + 2 / ");
+            spreadsheet.SetValue("A1", "B1");
+            spreadsheet.SetValue("B1", "3 2 *");
+            spreadsheet.SetValue("C1", "A1");
+            spreadsheet.SetValue("A2", "A1 B2 / 2 +");
+            spreadsheet.SetValue("B2", "3");
+            spreadsheet.SetValue("C2", "A2 B2 * 3 + 2 / ");
 
             spreadsheet.Calculate();
 
-            Assert.Equal("6", spreadsheet.GetValue(1, 1));
-            Assert.Equal("6", spreadsheet.GetValue(2, 1));
-            Assert.Equal("6", spreadsheet.GetValue(3, 1));
-            Assert.Equal("4", spreadsheet.GetValue(1, 2));
-            Assert.Equal("3", spreadsheet.GetValue(2, 2));
-            Assert.Equal("7.5", spreadsheet.GetValue(3, 2));
+            Assert.Equal("6", spreadsheet.GetValue("A1"));
+            Assert.Equal("6", spreadsheet.GetValue("B1"));
+            Assert.Equal("6", spreadsheet.GetValue("C1"));
+            Assert.Equal("4", spreadsheet.GetValue("A2"));
+            Assert.Equal("3", spreadsheet.GetValue("B2"));
+            Assert.Equal("7.5", spreadsheet.GetValue("C2"));
         }
 
         [Fact]

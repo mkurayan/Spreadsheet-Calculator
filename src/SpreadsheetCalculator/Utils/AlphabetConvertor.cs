@@ -36,7 +36,7 @@ namespace SpreadsheetCalculator.Utils
                 throw new FormatException($"Unknown letter in string: {letters}");
             }
 
-            return ToInt(letters);
+            return ToInt(letters.ToUpper());
         }
 
         private static string ToLetters(int index)

@@ -8,13 +8,11 @@ namespace SpreadsheetCalculator.Spreadsheet
     {
         private static Regex keyPattern = new Regex(@"^([a-zA-Z]+)(\d+)$");
 
-        public int ColumnIndex { get; private set; }
+        public int Column { get; private set; }
 
-        public int RowIndex { get; private set; }
+        public int Row { get; private set; }
 
         public string Key { get; private set; }
-
-        public bool IsValid { get; set; }
 
         public CellPosition(int columnIndex, int rowIndex)
         {
@@ -26,16 +24,12 @@ namespace SpreadsheetCalculator.Spreadsheet
             SetPosition(key);
         }
 
-        public void SetPosition(int columnIndex, int rowIndex)
+        public void SetPosition(int column, int row)
         {
-            if (columnIndex <= 0 || rowIndex <= 0)
-            {
-                SetPositionError();
-            }
-            else
-            {
-                SetPosition(columnIndex, rowIndex, AlphabetConvertor.IntToLetters(columnIndex) + rowIndex);
-            }
+            Column = column;
+            Row = row;
+
+            Key = AlphabetConvertor.IntToLetters(column) + row;
         }
 
         public void SetPosition(string key)
@@ -48,30 +42,13 @@ namespace SpreadsheetCalculator.Spreadsheet
             BigInteger columnIndex = AlphabetConvertor.LettersToInt(alphaPart);
             BigInteger rowIndex = BigInteger.Parse(numberPart);
 
-            if (columnIndex > int.MaxValue || rowIndex > int.MaxValue)
-            {
-                SetPositionError();
-            }
-            else
-            {
-                SetPosition((int)columnIndex, (int)rowIndex, key);
-            }
+            Column = columnIndex > int.MaxValue ? -1 : (int)columnIndex;
+            Row = rowIndex > int.MaxValue ? -1 : (int)rowIndex;
         }
 
-        private void SetPositionError()
+        public override string ToString()
         {
-            ColumnIndex = -1;
-            RowIndex = -1;
-            Key = string.Empty;
-            IsValid = false;
-        }
-
-        private void SetPosition(int columnIndex, int rowIndex, string key)
-        {
-            ColumnIndex = columnIndex;
-            RowIndex = rowIndex;
-            Key = key;
-            IsValid = true;
+            return Key;
         }
 
         public static bool IsCellPosition(string key)

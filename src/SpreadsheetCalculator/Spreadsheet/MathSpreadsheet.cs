@@ -83,7 +83,7 @@ namespace SpreadsheetCalculator.Spreadsheet
         }
 
         /// <summary>
-        /// Implements <see cref="IEditSpreadsheet.SetValue"/>.
+        /// Implements <see cref="IEditSpreadsheet.SetValue(int, int, string)"/>.
         /// </summary>
         public void SetValue(int column, int row, string value)
         {
@@ -97,7 +97,17 @@ namespace SpreadsheetCalculator.Spreadsheet
         }
 
         /// <summary>
-        /// Implements <see cref="IViewSpreadsheet.GetValue"/>.
+        /// Implements <see cref="IEditSpreadsheet.SetValue(string, string)"/>.
+        /// </summary>
+        public void SetValue(string key, string value)
+        {
+            var position = new CellPosition(key);
+
+            SetValue(position.Column, position.Row, value);
+        }
+
+        /// <summary>
+        /// Implements <see cref="IViewSpreadsheet.GetValue(int, int)"/>.
         /// </summary>
         public string GetValue(int column, int row)
         {
@@ -107,6 +117,16 @@ namespace SpreadsheetCalculator.Spreadsheet
             }
 
             throw new IndexOutOfRangeException("Requested cell is out of spreadsheet.");   
+        }
+
+        /// <summary>
+        /// Implements <see cref="IViewSpreadsheet.GetValue(string)"/>.
+        /// </summary>
+        public string GetValue(string key)
+        {
+            var position = new CellPosition(key);
+
+            return GetValue(position.Column, position.Row);
         }
 
         /// <summary>
@@ -148,9 +168,9 @@ namespace SpreadsheetCalculator.Spreadsheet
             var position = new CellPosition(key);
 
             // Check that cell reference inside current spreadsheet
-            if (position.IsValid && Matrix.InMatrix(position.ColumnIndex, position.RowIndex))
+            if (Matrix.InMatrix(position.Column, position.Row))
             {
-                return Matrix[position.ColumnIndex, position.RowIndex];
+                return Matrix[position.Column, position.Row];
             }
 
             return null;

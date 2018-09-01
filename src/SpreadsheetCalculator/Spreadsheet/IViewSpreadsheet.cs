@@ -18,5 +18,12 @@
         /// <param name="column">Column index in spreadsheet.</param>
         /// <param name="row">Row index in spreadsheet.</param>
         string GetValue(int column, int row);
+
+
+        /// <summary>
+        /// Get value from spreadsheet cell.
+        /// </summary>
+        /// <param name="key">Cell position</param>
+        string GetValue(string key);
     }
 }
