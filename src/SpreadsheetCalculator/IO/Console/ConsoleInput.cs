@@ -9,7 +9,7 @@ namespace SpreadsheetCalculator.IO
         private const int ColumnsThreshold = 10;
         private const int RowsThreshold = 99;
 
-        private Print print = new Print();
+        private readonly Print _print = new Print();
 
         public void Read(IEditSpreadsheet spreadsheet)
         {
@@ -52,7 +52,7 @@ namespace SpreadsheetCalculator.IO
                     {
                         CleanConsole();
 
-                        Console.WriteLine(print.PrintSpreadsheet(textSpreadsheet));
+                        Console.WriteLine(_print.PrintSpreadsheet(textSpreadsheet));
                     }
                     
                     Console.Write($"Please enter { new CellPosition(columnNumber, rowNumber) }: ");
@@ -66,7 +66,7 @@ namespace SpreadsheetCalculator.IO
             if (showInteractiveInput)
             {
                 CleanConsole();
-                Console.WriteLine(print.PrintSpreadsheet(textSpreadsheet));
+                Console.WriteLine(_print.PrintSpreadsheet(textSpreadsheet));
             }
 
             void CleanConsole()
@@ -81,15 +81,15 @@ namespace SpreadsheetCalculator.IO
 
         class TextSpreadsheet : IViewSpreadsheet, IEditSpreadsheet
         {
-            private Matrix<string> Matrix;
+            private Matrix<string> _matrix;
 
-            public int ColumnsCount => Matrix.ColumnsCount;
+            public int ColumnsCount => _matrix.ColumnsCount;
 
-            public int RowsCount => Matrix.RowsCount;
+            public int RowsCount => _matrix.RowsCount;
 
             public string GetValue(int column, int row)
             {
-                return Matrix[column, row] ?? string.Empty;
+                return _matrix[column, row] ?? string.Empty;
             }
 
             public string GetValue(string key)
@@ -101,12 +101,12 @@ namespace SpreadsheetCalculator.IO
 
             public void SetSize(int columnsCount, int rowsCount)
             {
-                Matrix = new Matrix<string>(columnsCount, rowsCount);
+                _matrix = new Matrix<string>(columnsCount, rowsCount);
             }
 
             public void SetValue(int column, int row, string value)
             {
-                Matrix[column, row] = value;
+                _matrix[column, row] = value;
             }
 
             public void SetValue(string key, string value)

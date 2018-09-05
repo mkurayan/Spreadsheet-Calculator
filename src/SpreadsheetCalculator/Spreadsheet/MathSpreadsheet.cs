@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using SpreadsheetCalculator.ExpressionCalculator;
-using SpreadsheetCalculator.ExpressionParser;
+
 using SpreadsheetCalculator.DirectedGraph;
+using SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis;
+using SpreadsheetCalculator.Spreadsheet.CellParsing;
 
 namespace SpreadsheetCalculator.Spreadsheet
 {
@@ -12,30 +13,17 @@ namespace SpreadsheetCalculator.Spreadsheet
     /// </summary>
     class MathSpreadsheet : IViewSpreadsheet, IEditSpreadsheet
     {
-        /// <summary>
-        /// Define maximum possible rows in Spreadsheet.
-        /// </summary>
+        // Define maximum possible rows in Spreadsheet.
         private const int MaxRowNumber = 999999;
-
-        /// <summary>
-        /// Define maximum possible columns in Spreadsheet.
-        /// </summary>
+       
+        // Define maximum possible columns in Spreadsheet.
         private const int MaxColumnNumber = 18278; // "ZZZ"
 
-        /// <summary>
-        /// Spreadsheet Cells.
-        /// </summary>
-        private Matrix<ICell> Matrix { get; set; }
+        // Store spreadsheet Cells.
+        private Matrix<Cell> Matrix { get; set; }
 
-        /// <summary>
-        /// Spreadsheet cell evaluator.
-        /// </summary>
-        private IExpressionCalculator ExpressionCalculator { get; }
-
-        /// <summary>
-        /// Spreadsheet cell text parser.
-        /// </summary>
-        private IStringParser StringParser { get; }
+        // Parse cell text.
+        private ICellParser Parser { get; set; }
 
         /// <summary>
         /// Implements <see cref="IViewSpreadsheet.RowsCount"/>.
@@ -50,15 +38,11 @@ namespace SpreadsheetCalculator.Spreadsheet
         /// <summary>
         /// Create new Spreadsheet.
         /// </summary>
-        /// <param name="calculator">Spreadsheet cell calculator.</param>
-        /// <param name="stringParser">Spreadsheet cell text parser.</param>
-        public MathSpreadsheet(IExpressionCalculator calculator, IStringParser stringParser)
+        public MathSpreadsheet(ICellParser parser)
         {
-            ExpressionCalculator = calculator ?? throw new ArgumentNullException(nameof(calculator));
-
-            StringParser = stringParser ?? throw new ArgumentNullException(nameof(stringParser));
+            Parser = parser ?? throw new ArgumentNullException(nameof(parser));
         }
-
+        
         /// <summary>
         /// Implements <see cref="IEditSpreadsheet.SetSize"/>.
         /// </summary>
@@ -79,7 +63,7 @@ namespace SpreadsheetCalculator.Spreadsheet
                 throw new IndexOutOfRangeException($"Invalid spreadsheet size {columnNumber} x {rowNumber}");
             }
 
-            Matrix = new Matrix<ICell>(columnNumber, rowNumber);
+            Matrix = new Matrix<Cell>(columnNumber, rowNumber);
         }
 
         /// <summary>
@@ -89,7 +73,14 @@ namespace SpreadsheetCalculator.Spreadsheet
         {
             if (Matrix.InMatrix(column, row))
             {
-                Matrix[column, row] = new Cell(StringParser.Parse(value));
+                var parsedExpression = Parser.Parse(value);
+
+                if (!parsedExpression.IsValid)
+                {
+                    Console.WriteLine($"Invalid expression {new CellPosition(column, row)}: {value}");
+                }
+
+                Matrix[column, row] = new Cell(parsedExpression);
                 return;
             }
 
@@ -135,14 +126,14 @@ namespace SpreadsheetCalculator.Spreadsheet
         /// <exception cref="SpreadsheetInternallException">Cyclic dependency found.</exception>
         public void Calculate()
         {
-            IList<ICell> sortedCells;
+            IList<Cell> sortedCells;
 
             try
             {
                 sortedCells = TopologicalSort.Sort(
                     Matrix.AsEnumerable(),
                     cell => cell.CellDependencies
-                        .Select(cellRef => GetCellByKey(cellRef.Value))
+                        .Select(cellRef => GetCellByKey(cellRef))
                         .Where(reff => reff != null)
                 );
             }
@@ -153,7 +144,9 @@ namespace SpreadsheetCalculator.Spreadsheet
 
             foreach (var cell in sortedCells)
             {
-                CalculateCell(cell);
+                Dictionary<string, ICell> cellDependencies = cell.CellDependencies.ToDictionary(cellRef => cellRef, cellRef => (ICell)GetCellByKey(cellRef));
+
+                cell.Calculate(cellDependencies);
             }
         }
 
@@ -162,8 +155,8 @@ namespace SpreadsheetCalculator.Spreadsheet
         /// Convert cell reference to column & row indexes in spreadsheet inner array representation.
         /// </summary>
         /// <param name="key">Cell reference: A1, A2, etc...</param>
-        /// <returns></returns>
-        private ICell GetCellByKey(string key)
+        /// <returns><see cref="ICell"/> </returns>
+        private Cell GetCellByKey(string key)
         {
             var position = new CellPosition(key);
 
@@ -174,63 +167,6 @@ namespace SpreadsheetCalculator.Spreadsheet
             }
 
             return null;
-        }
-
-        private void CalculateCell(ICell cell)
-        {
-            if (cell.IsEmpty)
-            {
-                cell.SetValue(0);
-            }
-            else 
-            {
-                var cellDependencies = cell.CellDependencies.Select(token => GetCellByKey(token.Value));
-
-                if (cellDependencies.Any(c => c == null))
-                {
-                    cell.SetError(CellState.ValueError);
-                    return;
-                }
-
-                if (cellDependencies.Any(c => c.CellState == CellState.Pending))
-                {
-                    throw new SpreadsheetInternallException("Calculation flow error, one of the cell references were missed.");
-                }
-
-                if (cellDependencies.Any(c => c.CellState != CellState.Fulfilled))
-                {
-                    cell.SetError(CellState.ValueError);
-                    return;
-                }
-
-                var cellTokens = cell.CellTokens
-                    .Select(token => token.Type == TokenType.CellReference ? new Token(TokenType.Number, GetCellByKey(token.Value).ToString()) : token)
-                    .ToList();
-
-                (bool validationResult, string validationError) = ExpressionCalculator.Validate(cellTokens);
-
-                if (validationResult)
-                {
-                    try
-                    {
-                        double calculatedValue = ExpressionCalculator.Calculate(cellTokens);
-
-                        cell.SetValue(calculatedValue);
-                    }
-                    catch (CalculationException)
-                    {
-                        cell.SetError(CellState.ValueError);
-                    }
-                    catch (CalculationInrernalException exception)
-                    {
-                        throw new SpreadsheetInternallException("Internal error during cell calculation.", exception);
-                    }
-                }
-                else
-                {
-                    cell.SetError(CellState.ValueError);
-                }
-            }
         }
     }
 }

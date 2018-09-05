@@ -30,3 +30,10 @@ _ReSharper*/
 .vs/
 #Nuget packages folder
 packages/
+src/.idea/.idea.SpreadsheetCalculator/.idea/.name
+src/.idea/.idea.SpreadsheetCalculator/.idea/contentModel.xml
+src/.idea/.idea.SpreadsheetCalculator/.idea/indexLayout.xml
+src/.idea/.idea.SpreadsheetCalculator/.idea/modules.xml
+src/.idea/.idea.SpreadsheetCalculator/.idea/vcs.xml
+src/.idea/.idea.SpreadsheetCalculator/.idea/workspace.xml
+src/.idea/.idea.SpreadsheetCalculator/riderModule.iml

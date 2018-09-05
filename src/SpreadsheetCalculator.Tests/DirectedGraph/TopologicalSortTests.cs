@@ -1,9 +1,9 @@
-﻿using SpreadsheetCalculator.DirectedGraph;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using SpreadsheetCalculator.DirectedGraph;
 using Xunit;
 
-namespace SpreadsheetCalculator.Tests
+namespace SpreadsheetCalculator.Tests.DirectedGraph
 {
     public class TopologicalSortTests
     {

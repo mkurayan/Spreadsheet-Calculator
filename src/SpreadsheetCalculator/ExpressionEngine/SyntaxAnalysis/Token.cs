@@ -1,4 +1,4 @@
-﻿namespace SpreadsheetCalculator.ExpressionParser
+﻿namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis
 {
     struct Token
     {
@@ -12,6 +12,8 @@
             Value = value;
         }
 
-        public override string ToString() => $"{Type}: {Value}";
+        public Token(TokenType type, char value) : this(type, value.ToString())
+        {
+        }
     }
 }

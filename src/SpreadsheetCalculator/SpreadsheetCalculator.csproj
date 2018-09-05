@@ -7,9 +7,23 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ExpressionCalculator\**" />
+    <Compile Remove="ExpressionParser\**" />
+    <EmbeddedResource Remove="ExpressionCalculator\**" />
+    <EmbeddedResource Remove="ExpressionParser\**" />
+    <None Remove="ExpressionCalculator\**" />
+    <None Remove="ExpressionParser\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="System">
       <HintPath>System</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="ExpressionEngine\SyntaxAnalysis\PrefixNotation\" />
+    <Folder Include="ExpressionEngine\SyntaxAnalysis\PostfixNotation\" />
   </ItemGroup>
 
 </Project>

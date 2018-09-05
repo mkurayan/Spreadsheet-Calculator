@@ -15,15 +15,19 @@
         /// </summary>
         Fulfilled,
 
-        /// <summary>
-        /// There's something wrong with the way your formula is typed. 
-        /// Or, there's something wrong with the cells you are referencing." 
-        /// </summary>
-        ValueError,
+        SyntaxError,
 
-        /// <summary>
-        /// Cell contains numeric values that aren’t valid.
-        /// </summary>
-        NumberError
+        CellValueError
+ 
+        ///// <summary>
+        ///// There's something wrong with the way your formula is typed. 
+        ///// Or, there's something wrong with the cells you are referencing." 
+        ///// </summary>
+        //ValueError,
+
+        ///// <summary>
+        ///// Cell contains numeric values that aren’t valid.
+        ///// </summary>
+        //NumberError
     }
 }

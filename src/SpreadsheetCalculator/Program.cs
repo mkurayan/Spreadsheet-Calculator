@@ -1,7 +1,7 @@
-﻿using SpreadsheetCalculator.ExpressionCalculator;
-using SpreadsheetCalculator.ExpressionParser;
+﻿using SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis.InfixNotation;
 using SpreadsheetCalculator.IO;
 using SpreadsheetCalculator.Spreadsheet;
+using SpreadsheetCalculator.Spreadsheet.CellParsing;
 using System;
 
 namespace SpreadsheetCalculator
@@ -13,7 +13,7 @@ namespace SpreadsheetCalculator
             var inputFile = args.Length > 0 ? args[0] :null;
             var outputFile = args.Length > 1 ? args[1] : null;
 
-            MathSpreadsheet spreadsheet = new MathSpreadsheet(new InfixNotationCalculator(), new StringParser());
+            MathSpreadsheet spreadsheet = new MathSpreadsheet(new CellParser(new InfixExpressionFactory()));
 
             var reader = GetTextReader(inputFile);
 

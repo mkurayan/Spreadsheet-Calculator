@@ -6,7 +6,7 @@ namespace SpreadsheetCalculator.Spreadsheet
 {
     class CellPosition
     {
-        private static Regex keyPattern = new Regex(@"^([a-zA-Z]+)(\d+)$");
+        private static readonly Regex KeyPattern = new Regex(@"^([a-zA-Z]+)(\d+)$");
 
         public int Column { get; private set; }
 
@@ -34,7 +34,7 @@ namespace SpreadsheetCalculator.Spreadsheet
 
         public void SetPosition(string key)
         {
-            Match result = keyPattern.Match(key);
+            Match result = KeyPattern.Match(key);
 
             string alphaPart = result.Groups[1].Value;
             string numberPart = result.Groups[2].Value;
@@ -49,11 +49,6 @@ namespace SpreadsheetCalculator.Spreadsheet
         public override string ToString()
         {
             return Key;
-        }
-
-        public static bool IsCellPosition(string key)
-        {
-            return keyPattern.IsMatch(key);
         }
     }    
 }

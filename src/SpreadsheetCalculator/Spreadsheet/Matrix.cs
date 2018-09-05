@@ -8,17 +8,17 @@ namespace SpreadsheetCalculator.Spreadsheet
     /// <typeparam name="T"></typeparam>
     class Matrix<T> where T : class
     {
-        private T[,] cells { get; set; }
+        private T[,] Cells { get; set; }
 
         /// <summary>
         /// Rows count in matrix.
         /// </summary>
-        public int RowsCount => cells.GetLength(1);
+        public int RowsCount => Cells.GetLength(1);
 
         /// <summary>
         /// Columns count in matrix.
         /// </summary>
-        public int ColumnsCount => cells.GetLength(0);
+        public int ColumnsCount => Cells.GetLength(0);
 
         /// <summary>
         /// Create new matrix with specified size.
@@ -27,7 +27,7 @@ namespace SpreadsheetCalculator.Spreadsheet
         /// <param name="rowsCount">Rows count in matrix.</param>
         public Matrix(int columnsCount, int rowsCount)
         {
-            cells = new T[columnsCount, rowsCount];
+            Cells = new T[columnsCount, rowsCount];
         }
 
         /// <summary>
@@ -51,8 +51,8 @@ namespace SpreadsheetCalculator.Spreadsheet
         /// <returns></returns>
         public T this[int column, int row]
         {
-            get => cells[column - 1, row - 1];
-            set => cells[column - 1, row - 1] = value;
+            get => Cells[column - 1, row - 1];
+            set => Cells[column - 1, row - 1] = value;
         }
 
         /// <summary>
@@ -65,7 +65,7 @@ namespace SpreadsheetCalculator.Spreadsheet
             {
                 for (int j = 0; j < RowsCount; j++)
                 {
-                    yield return cells[i, j];
+                    yield return Cells[i, j];
                 }
             }
         }

@@ -1,25 +1,24 @@
-﻿using SpreadsheetCalculator.ExpressionCalculator;
-using System;
-using Xunit;
+﻿using System;
 using Moq;
-using SpreadsheetCalculator.ExpressionParser;
 using SpreadsheetCalculator.Spreadsheet;
+using SpreadsheetCalculator.Spreadsheet.CellParsing;
+using Xunit;
 
-namespace SpreadsheetCalculator.Tests
+namespace SpreadsheetCalculator.Tests.Spreadsheet
 {
     public class SpreadsheetTests
     {
-        Mock<IExpressionCalculator> ExpressionCalculatorMock;
-        Mock<IStringParser> StringParserMock;
-
-        MathSpreadsheet Spreadsheet;
+        readonly MathSpreadsheet _spreadsheet;
 
         public SpreadsheetTests()
         {
-            ExpressionCalculatorMock = new Mock<IExpressionCalculator>();
-            StringParserMock = new Mock<IStringParser>();
+            var cellExpression = new Mock<ICellExpression>();
+            cellExpression.Setup(foo => foo.IsValid).Returns(true);
 
-            Spreadsheet = new MathSpreadsheet(ExpressionCalculatorMock.Object, StringParserMock.Object);
+            var cellParser = new Mock<ICellParser>();
+            cellParser.Setup(foo => foo.Parse(It.IsAny<string>())).Returns(cellExpression.Object);
+
+            _spreadsheet = new MathSpreadsheet(cellParser.Object);
         }
 
         [Theory]
@@ -31,28 +30,22 @@ namespace SpreadsheetCalculator.Tests
         [InlineData(1, 1000001)]
         public void SpreadsheetConstructor_InvalidSize_ThrowIndexOutOfRangeException(int rowNumber, int columnNumber)
         {
-            Assert.Throws<IndexOutOfRangeException>(() => Spreadsheet.SetSize(columnNumber, rowNumber));
+            Assert.Throws<IndexOutOfRangeException>(() => _spreadsheet.SetSize(columnNumber, rowNumber));
         }
 
         [Fact]
-        public void SpreadsheetConstructor_ExpressionCalculatorMissied_ThrowArgumentException()
+        public void SpreadsheetConstructor_ArgumentsIsNullMissied_ThrowNullArgumentException()
         {
-            Assert.Throws<ArgumentNullException>(() => new MathSpreadsheet(null, StringParserMock.Object));
-        }
-
-        [Fact]
-        public void SpreadsheetConstructor_StringParserMissied_ThrowArgumentException()
-        {
-            Assert.Throws<ArgumentNullException>(() => new MathSpreadsheet(ExpressionCalculatorMock.Object, null));
+            Assert.Throws<ArgumentNullException>(() => new MathSpreadsheet(null));
         }
 
         [Fact]
         public void SpreadsheetConstructor_CorrectOptions_SpreadsheetCreated()
         {
-            Spreadsheet.SetSize(2, 3);
+            _spreadsheet.SetSize(2, 3);
 
-            Assert.Equal(2, Spreadsheet.ColumnsCount);
-            Assert.Equal(3, Spreadsheet.RowsCount);
+            Assert.Equal(2, _spreadsheet.ColumnsCount);
+            Assert.Equal(3, _spreadsheet.RowsCount);
         }
 
         [Theory]
@@ -64,35 +57,34 @@ namespace SpreadsheetCalculator.Tests
         [InlineData(0, 0)]
         public void GetCell_CellIsOutOfSpreadsheetBoundaries_ThrowIndexOutOfRangeException(int columnNumber, int rowNumber)
         {
-            Spreadsheet.SetSize(1, 1);
+            _spreadsheet.SetSize(1, 1);
 
-            Assert.Throws<IndexOutOfRangeException>(() => Spreadsheet.GetValue(rowNumber, columnNumber));
+            Assert.Throws<IndexOutOfRangeException>(() => _spreadsheet.GetValue(rowNumber, columnNumber));
         }
 
         [Theory]
         [InlineData(-1, 1)]
         [InlineData(1, -1)]
-        [InlineData(-1, 1)]
         [InlineData(0, 1)]
         [InlineData(1, 0)]
         [InlineData(0, 0)]
         public void SetCell_CellIsOutOfSpreadsheetBoundaries_ThrowIndexOutOfRangeException(int columnNumber, int rowNumber)
         {
-            Spreadsheet.SetSize(1, 1);
+            _spreadsheet.SetSize(1, 1);
 
-            Assert.Throws<IndexOutOfRangeException>(() => Spreadsheet.SetValue(rowNumber, columnNumber, "x"));
+            Assert.Throws<IndexOutOfRangeException>(() => _spreadsheet.SetValue(rowNumber, columnNumber, "x"));
         }
 
         [Fact]
         public void SetCell_CellValueButNotCalculate_GetCellInPendingState()
         {
-            Spreadsheet.SetSize(1, 1);
+            _spreadsheet.SetSize(1, 1);
 
             var cellValue = "dummy"; ;
 
-            Spreadsheet.SetValue(1, 1, cellValue);
+            _spreadsheet.SetValue(1, 1, cellValue);
 
-            Assert.Equal("#PENDING!", Spreadsheet.GetValue(1, 1));
+            Assert.Equal("#PENDING!", _spreadsheet.GetValue(1, 1));
         }
 
         [Fact]
@@ -101,15 +93,15 @@ namespace SpreadsheetCalculator.Tests
             int columnNumber = 2;
             int rowNumber = 3;
 
-            string cellCoordinatesToString(int i, int j) => $"row: {i} column: {j}";
+            string CellCoordinatesToString(int i, int j) => $"row: {i} column: {j}";
 
-            Spreadsheet.SetSize(rowNumber, columnNumber);
+            _spreadsheet.SetSize(rowNumber, columnNumber);
 
             for (int i = 1; i <= rowNumber; i++)
             {
                 for (int j = 1; j <= columnNumber; j++)
                 {
-                    Spreadsheet.SetValue(i, j, cellCoordinatesToString(i, j));
+                    _spreadsheet.SetValue(i, j, CellCoordinatesToString(i, j));
                 }
             }
 
@@ -117,7 +109,7 @@ namespace SpreadsheetCalculator.Tests
             {
                 for (int j = 1; j <= columnNumber; j++)
                 {
-                    Assert.Equal("#PENDING!", Spreadsheet.GetValue(i, j));
+                    Assert.Equal("#PENDING!", _spreadsheet.GetValue(i, j));
                 }
             }
         }

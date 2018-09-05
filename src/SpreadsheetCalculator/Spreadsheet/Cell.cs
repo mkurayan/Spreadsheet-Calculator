@@ -1,4 +1,5 @@
-﻿using SpreadsheetCalculator.ExpressionParser;
+﻿using SpreadsheetCalculator.ExpressionEngine.SyntaxTree;
+using SpreadsheetCalculator.Spreadsheet.CellParsing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,57 +11,62 @@ namespace SpreadsheetCalculator.Spreadsheet
     /// </summary>
     class Cell : ICell
     {
-        /// <summary>
-        /// Calculated cell value.
-        /// </summary>
-        private double? calculatedValue;
+        public double? CellValue { get; private set; }
 
         public CellState CellState { get; private set; }
 
-        public bool IsEmpty => !CellTokens.Any();
+        public IEnumerable<string> CellDependencies => _expression.CellReferences;
 
-        public IEnumerable<Token> CellDependencies => CellTokens.Where(t => t.Type == TokenType.CellReference);
-
-        public IEnumerable<Token> CellTokens { get; }
+        private readonly ICellExpression _expression;
 
         /// <summary>
         /// Create new SpreadsheetCell.
         /// </summary>
         /// <param name="value">Cell value.</param>
-        public Cell(IEnumerable<Token> tokens)
+        public Cell(ICellExpression expression)
         {
-            CellTokens = tokens ?? throw new ArgumentNullException(nameof(tokens)); ;
+            _expression = expression;
 
-            CellState = CellState.Pending;
+            CellState = expression.IsValid ? CellState.Pending : CellState.SyntaxError;
         }
 
-        public void SetValue(double value)
+        public void Calculate(Dictionary<string, ICell> cellDependencies)
         {
-            if (Double.IsNaN(value) || Double.IsInfinity(value))
+            if (_expression.IsValid)
             {
-                SetError(CellState.NumberError);
+                if (cellDependencies.Any(c => c.Value == null))
+                {
+                    SetError();
+                    return;
+                }
+
+                if (cellDependencies.Any(c => c.Value.CellState == CellState.Pending))
+                {
+                    throw new SpreadsheetInternallException("Calculation flow error, one of the cell references were missed.");
+                }
+
+                if (cellDependencies.Any(c => c.Value.CellState != CellState.Fulfilled))
+                {
+                    SetError();
+                    return;
+                }
+
+                double value = _expression.Calculate(new DependencyResolver(cellDependencies));
+
+                SetValue(value);
             }
-            else
+
+            void SetError()
+            {
+                CellState = CellState.CellValueError;
+                CellValue = null;
+            }
+
+            void SetValue(double value)
             {
                 CellState = CellState.Fulfilled;
-                calculatedValue = value;
+                CellValue = value;
             }
-        }
-
-        public void SetError(CellState state)
-        {
-            if (state == CellState.Pending)
-            {
-                throw new InvalidOperationException($"Illegal 'Pending' state assignment");
-            }
-
-            if (state == CellState.Fulfilled)
-            {
-                throw new InvalidOperationException($"Illegal 'Fulfilled' state assignment, in order to mark cell as fulfilled use SetValue method.");
-            }
-
-            CellState = state;
-            calculatedValue = null;
         }
 
         /// <summary>
@@ -74,20 +80,35 @@ namespace SpreadsheetCalculator.Spreadsheet
                 case CellState.Pending:
                     return "#PENDING!";
                 case CellState.Fulfilled:
-                    if (calculatedValue.HasValue)
+                    if (CellValue.HasValue)
                     {
-                        return calculatedValue.Value.ToString();
+                        return CellValue.Value.ToString();
                     }
                     else
                     {
                         throw new InvalidOperationException("Cell in inconsistent state.");
                     }
-                case CellState.ValueError:
+                case CellState.CellValueError:
                     return "#VALUE!";
-                case CellState.NumberError:
-                    return "#NUM!";
+                case CellState.SyntaxError:
+                    return "#SYNTAX!";
                 default:
                     throw new NotImplementedException($"Unknown cell state: {CellState}");
+            }
+        }
+
+        class DependencyResolver : IDependencyResolver
+        {
+            readonly Dictionary<string, ICell> _cellDependencies;
+
+            public DependencyResolver(Dictionary<string, ICell> cellDependencies)
+            {
+                _cellDependencies = cellDependencies;
+            }
+
+            public double ResolveCellreference(string key)
+            {
+                return _cellDependencies[key].CellValue.Value;
             }
         }
     }
