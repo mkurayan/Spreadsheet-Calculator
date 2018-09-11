@@ -12,7 +12,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         [Fact]
         public void CreateValidCellExpression_EmptyTokensList_EmptyExpressionCreated()
         {
-            ValidCellExpression exp = new ValidCellExpression(Enumerable.Empty<Token>(), null);
+            var exp = new ValidCellExpression(new Token[] {}, null);
 
             Assert.True(exp.IsValid);
 
@@ -24,9 +24,9 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         [Fact]
         public void CalculateExpression_EmptyExpression_ReturnZero()
         {
-            Mock<IDependencyResolver> resolver = new Mock<IDependencyResolver>();
+            var resolver = new Mock<IDependencyResolver>();
 
-            ValidCellExpression exp = new ValidCellExpression(Enumerable.Empty<Token>(), null);
+            var exp = new ValidCellExpression(new Token[] {}, null);
 
             Assert.Equal(0, exp.Calculate(resolver.Object));
         }
@@ -34,7 +34,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         [Fact]
         public void CreateCellExpression_WithoutCellReferences_CellReferencesPropertyEmpty()
         {
-            ValidCellExpression exp = new ValidCellExpression(new[] {
+            var exp = new ValidCellExpression(new[] {
                 new Token(TokenType.Number, ""),
                 new Token(TokenType.Add, ""),
                 new Token(TokenType.Subtract, ""),
@@ -50,7 +50,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         [Fact]
         public void CreateCellExpression_WithCellReferences_ExpectedCellReferencesCount()
         {
-            ValidCellExpression exp = new ValidCellExpression(new[] {
+            var exp = new ValidCellExpression(new[] {
                 new Token(TokenType.Number, "1"),
                 new Token(TokenType.Add, "+"),
                 new Token(TokenType.CellReference, "A1"),
@@ -64,12 +64,12 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         [Fact]
         public void CalculateExpression_WithCellReferences_ExpectedResult()
         {
-            double expectedResult = 10;
+            const double expectedResult = 10;
 
-            Mock<INode> node = new Mock<INode>();
+            var node = new Mock<INode>();
             node.Setup(foo => foo.Evaluate(It.IsAny<IDependencyResolver>())).Returns(expectedResult);
 
-            ValidCellExpression exp = new ValidCellExpression(new[] {
+            var exp = new ValidCellExpression(new[] {
                 //dummy fields.
                 new Token(TokenType.CellReference, "A1"),
                 new Token(TokenType.Add, "+"),

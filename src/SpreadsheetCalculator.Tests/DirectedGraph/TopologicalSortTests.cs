@@ -7,10 +7,10 @@ namespace SpreadsheetCalculator.Tests.DirectedGraph
 {
     public class TopologicalSortTests
     {
-        class Node
+        private class Node
         {
-            public string Name { get; private set; }
-            public List<Node> Dependencies { get; private set; }
+            private string Name { get; }
+            public List<Node> Dependencies { get; }
 
             public Node(string name, params Node[] dependencies)
             {
@@ -38,11 +38,11 @@ namespace SpreadsheetCalculator.Tests.DirectedGraph
         }
 
         [Fact]
-        public void Sort_EmptyGrapgh_GrapghRemainsEmpty()
+        public void Sort_EmptyGraph_GraphRemainsEmpty()
         {
-            var emptyGrapgh = new Node[0];
+            var emptyGraph = new Node[0];
 
-            Assert.Equal(0, TopologicalSort.Sort(emptyGrapgh, item => item.Dependencies).Count);
+            Assert.Equal(0, TopologicalSort.Sort(emptyGraph, item => item.Dependencies).Count);
         }
 
         [Fact]
@@ -58,7 +58,7 @@ namespace SpreadsheetCalculator.Tests.DirectedGraph
         }
 
         [Fact]
-        public void Sort_TrivialDirectedGraph_GrapthSorted()
+        public void Sort_TrivialDirectedGraph_GraphSorted()
         {
             var a = new Node("A");
             var b = new Node("B", a);
@@ -72,7 +72,7 @@ namespace SpreadsheetCalculator.Tests.DirectedGraph
         }
 
         [Fact]
-        public void Sort_DirectedGraph_GrapthSorted()
+        public void Sort_DirectedGraph_GraphSorted()
         {
             var a = new Node("A");
             var c = new Node("C");

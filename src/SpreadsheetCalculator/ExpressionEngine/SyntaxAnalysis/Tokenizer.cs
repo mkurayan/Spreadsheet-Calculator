@@ -7,7 +7,7 @@ namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis
     /// <summary>
     /// Split string to tokens.
     /// </summary>
-    abstract class Tokenizer : ITokenizer
+    internal abstract class Tokenizer : ITokenizer
     {
         protected abstract Dictionary<char, TokenType> SymbolsMap { get; }
 
@@ -15,11 +15,11 @@ namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis
 
         public Token[] Tokenize(string str)
         {
-            List<Token> tokens = new List<Token>();
+            var tokens = new List<Token>();
 
             _symbolsStack = new Stack<char>(str.ToCharArray().Reverse());
 
-            while (_symbolsStack.TryPeek(out char ch))
+            while (_symbolsStack.TryPeek(out var ch))
             {
                 if (char.IsWhiteSpace(ch))
                 {
@@ -65,7 +65,7 @@ namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis
 
         private IEnumerable<char> ReadSequence(Func<char, bool> check)
         {
-            while (_symbolsStack.TryPeek(out char ch) && check(ch))
+            while (_symbolsStack.TryPeek(out var ch) && check(ch))
             {
                 yield return _symbolsStack.Pop();
             }
@@ -73,18 +73,18 @@ namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis
 
         private Token ReadNumberToken()
         {
-            char[] number = ReadDigits();
+            var number = ReadDigits();
 
-            if (_symbolsStack.TryPeek(out char nextChar) && nextChar == '.')
+            if (_symbolsStack.TryPeek(out var nextChar) && nextChar == '.')
             {
                 //Skip '.' symbol
                 _symbolsStack.Pop();
 
-                char[] decimalPart = ReadDigits();
+                var decimalPart = ReadDigits();
 
                 if (decimalPart.Length > 0)
                 {
-                    int integerPartLength = number.Length;
+                    var integerPartLength = number.Length;
 
                     Array.Resize(ref number, integerPartLength + decimalPart.Length + 1);
                     number[integerPartLength] = '.';
@@ -102,9 +102,9 @@ namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis
 
         private Token ReadCellReferenceToken()
         {
-            char[] letterPart = ReadLetters();
+            var letterPart = ReadLetters();
 
-            char[] digitPart = ReadDigits();
+            var digitPart = ReadDigits();
 
             if (letterPart.Length == 0 || digitPart.Length == 0)
             {
@@ -112,15 +112,15 @@ namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis
             }
             
             // Result cell reference.
-            char[] cellReff = new char[letterPart.Length + digitPart.Length];
+            var cellReference = new char[letterPart.Length + digitPart.Length];
             
             // Copy letters.
-            Array.Copy(letterPart, cellReff, letterPart.Length);
+            Array.Copy(letterPart, cellReference, letterPart.Length);
 
             // Copy digits.
-            Array.Copy(digitPart, 0, cellReff, letterPart.Length, digitPart.Length);
+            Array.Copy(digitPart, 0, cellReference, letterPart.Length, digitPart.Length);
            
-            return new Token(TokenType.CellReference, string.Concat(cellReff));
+            return new Token(TokenType.CellReference, string.Concat(cellReference));
         }
     }
 }

@@ -1,17 +1,14 @@
 ﻿using SpreadsheetCalculator.Spreadsheet;
-using System;
 
-namespace SpreadsheetCalculator.IO
+namespace SpreadsheetCalculator.IO.Console
 {
-    class ConsoleOutput : IOutputStreamWriter
+    internal class ConsoleOutput : IOutputStreamWriter
     {
-        private readonly Print _print = new Print();
-
         public void Write(IViewSpreadsheet spreadsheet)
         {
-            Console.WriteLine("Spreadsheet size: {0} x {1}", spreadsheet.ColumnsCount, spreadsheet.RowsCount);
+            System.Console.WriteLine("Spreadsheet size: {0} x {1}", spreadsheet.ColumnsCount, spreadsheet.RowsCount);
 
-            Console.WriteLine(_print.PrintSpreadsheet(spreadsheet));
+            System.Console.WriteLine(Print.PrintSpreadsheet(spreadsheet));
         }
     }
 }

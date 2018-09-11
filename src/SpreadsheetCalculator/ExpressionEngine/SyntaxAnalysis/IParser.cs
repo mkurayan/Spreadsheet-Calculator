@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis
 {
-    interface IParser
+    internal interface IParser
     {
         INode Parse(IEnumerable<Token> tokens);
     }

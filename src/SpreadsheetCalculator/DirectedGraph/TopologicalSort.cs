@@ -6,7 +6,7 @@ namespace SpreadsheetCalculator.DirectedGraph
     /// <summary>
     /// Use depth-first search algorithm in order to sort items in directed graph.
     /// </summary>
-    static class TopologicalSort
+    internal static class TopologicalSort
     {
         /// <summary>
         /// Sorts the specified source.
@@ -29,10 +29,9 @@ namespace SpreadsheetCalculator.DirectedGraph
             return sorted;
         }
 
-        private static void Visit<T>(T item, Func<T, IEnumerable<T>> getDependencies, List<T> sorted, Dictionary<T, bool> visited)
+        private static void Visit<T>(T item, Func<T, IEnumerable<T>> getDependencies, ICollection<T> sorted, IDictionary<T, bool> visited)
         {
-            bool inProcess;
-            var alreadyVisited = visited.TryGetValue(item, out inProcess);
+            var alreadyVisited = visited.TryGetValue(item, out var inProcess);
 
             if (alreadyVisited)
             {

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 
 using SpreadsheetCalculator.DirectedGraph;
-using SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis;
 using SpreadsheetCalculator.Spreadsheet.CellParsing;
 
 namespace SpreadsheetCalculator.Spreadsheet
@@ -11,7 +10,7 @@ namespace SpreadsheetCalculator.Spreadsheet
     /// <summary>
     /// Spreadsheet of N x M size.
     /// </summary>
-    class MathSpreadsheet : IViewSpreadsheet, IEditSpreadsheet
+    internal class MathSpreadsheet : IViewSpreadsheet, IEditSpreadsheet
     {
         // Define maximum possible rows in Spreadsheet.
         private const int MaxRowNumber = 999999;
@@ -23,29 +22,32 @@ namespace SpreadsheetCalculator.Spreadsheet
         private Matrix<Cell> Matrix { get; set; }
 
         // Parse cell text.
-        private ICellParser Parser { get; set; }
+        private ICellParser Parser { get; }
 
         /// <summary>
-        /// Implements <see cref="IViewSpreadsheet.RowsCount"/>.
+        /// Rows count in spreadsheet.
         /// </summary>
         public int RowsCount => Matrix.RowsCount;
 
         /// <summary>
-        /// Implements <see cref="IViewSpreadsheet.ColumnsCount"/>.
+        /// Columns count in spreadsheet.
         /// </summary>
         public int ColumnsCount => Matrix.ColumnsCount;
 
         /// <summary>
-        /// Create new Spreadsheet.
+        /// Created new spreadsheet 
         /// </summary>
+        /// <param name="parser"></param>
         public MathSpreadsheet(ICellParser parser)
         {
             Parser = parser ?? throw new ArgumentNullException(nameof(parser));
         }
-        
+
         /// <summary>
-        /// Implements <see cref="IEditSpreadsheet.SetSize"/>.
+        /// Set spreadsheet size.
         /// </summary>
+        /// <param name="columnNumber">Columns number.</param>
+        /// <param name="rowNumber">Rows number.</param>
         public void SetSize(int columnNumber, int rowNumber)
         {
             if (columnNumber > MaxColumnNumber)
@@ -67,29 +69,33 @@ namespace SpreadsheetCalculator.Spreadsheet
         }
 
         /// <summary>
-        /// Implements <see cref="IEditSpreadsheet.SetValue(int, int, string)"/>.
+        /// Set cell value in spreadsheet.
         /// </summary>
+        /// <param name="column">Column number.</param>
+        /// <param name="row">Row number.</param>
+        /// <param name="value">New cell value.</param>
         public void SetValue(int column, int row, string value)
         {
-            if (Matrix.InMatrix(column, row))
+            if (!Matrix.InMatrix(column, row))
             {
-                var parsedExpression = Parser.Parse(value);
+                throw new IndexOutOfRangeException("Requested cell is out of spreadsheet.");
+            }
+            
+            var parsedExpression = Parser.Parse(value);
 
-                if (!parsedExpression.IsValid)
-                {
-                    Console.WriteLine($"Invalid expression {new CellPosition(column, row)}: {value}");
-                }
-
-                Matrix[column, row] = new Cell(parsedExpression);
-                return;
+            if (!parsedExpression.IsValid)
+            {
+                Console.WriteLine($"Invalid expression {new CellPosition(column, row)}: {value}");
             }
 
-            throw new IndexOutOfRangeException("Requested cell is out of spreadsheet.");
+            Matrix[column, row] = new Cell(parsedExpression);
         }
 
         /// <summary>
-        /// Implements <see cref="IEditSpreadsheet.SetValue(string, string)"/>.
+        /// Set cell value in spreadsheet.
         /// </summary>
+        /// <param name="key">Spreadsheet cell Id. Example: A1, A2, etc.</param>
+        /// <param name="value">New cell value.</param>
         public void SetValue(string key, string value)
         {
             var position = new CellPosition(key);
@@ -97,9 +103,13 @@ namespace SpreadsheetCalculator.Spreadsheet
             SetValue(position.Column, position.Row, value);
         }
 
+
         /// <summary>
-        /// Implements <see cref="IViewSpreadsheet.GetValue(int, int)"/>.
+        /// Get cell value from spreadsheet.
         /// </summary>
+        /// <param name="column">Column number in spreadsheet.</param>
+        /// <param name="row">Row number in spreadsheet.</param>
+        /// <returns>Current cell value.</returns>
         public string GetValue(int column, int row)
         {
             if (Matrix.InMatrix(column, row))
@@ -111,8 +121,10 @@ namespace SpreadsheetCalculator.Spreadsheet
         }
 
         /// <summary>
-        /// Implements <see cref="IViewSpreadsheet.GetValue(string)"/>.
+        /// Get cell value from spreadsheet.
         /// </summary>
+        /// <param name="key">Spreadsheet cell Id. Example: A1, A2, etc.</param>
+        /// <returns>Current cell value.</returns>
         public string GetValue(string key)
         {
             var position = new CellPosition(key);
@@ -123,7 +135,7 @@ namespace SpreadsheetCalculator.Spreadsheet
         /// <summary>
         /// Calculate all cells in spreadsheet.
         /// </summary>
-        /// <exception cref="SpreadsheetInternallException">Cyclic dependency found.</exception>
+        /// <exception cref="SpreadsheetInternalException">Cyclic dependency found.</exception>
         public void Calculate()
         {
             IList<Cell> sortedCells;
@@ -133,40 +145,31 @@ namespace SpreadsheetCalculator.Spreadsheet
                 sortedCells = TopologicalSort.Sort(
                     Matrix.AsEnumerable(),
                     cell => cell.CellDependencies
-                        .Select(cellRef => GetCellByKey(cellRef))
-                        .Where(reff => reff != null)
+                        .Select(GetCellByKey)
+                        .Where(cellReference => cellReference!= null)
                 );
             }
             catch (CyclicDependencyException exception)
             {
-                throw new SpreadsheetInternallException("Cannot calculate spreadsheet, there is cyclic dependencies between cells.", exception);
+                throw new SpreadsheetInternalException("Cannot calculate spreadsheet, there is cyclic dependencies between cells.", exception);
             }
 
             foreach (var cell in sortedCells)
             {
-                Dictionary<string, ICell> cellDependencies = cell.CellDependencies.ToDictionary(cellRef => cellRef, cellRef => (ICell)GetCellByKey(cellRef));
+                var cellDependencies = cell.CellDependencies.ToDictionary(cellRef => cellRef, cellRef => (ICell)GetCellByKey(cellRef));
 
                 cell.Calculate(cellDependencies);
             }
         }
-
-        /// <summary>
-        /// Get Spreadsheet cell by cell reference.
-        /// Convert cell reference to column & row indexes in spreadsheet inner array representation.
-        /// </summary>
-        /// <param name="key">Cell reference: A1, A2, etc...</param>
-        /// <returns><see cref="ICell"/> </returns>
+        
+        // Get Spreadsheet cell by cell reference.
+        // Convert cell reference to column & row indexes in spreadsheet inner representation.
         private Cell GetCellByKey(string key)
         {
             var position = new CellPosition(key);
 
             // Check that cell reference inside current spreadsheet
-            if (Matrix.InMatrix(position.Column, position.Row))
-            {
-                return Matrix[position.Column, position.Row];
-            }
-
-            return null;
+            return Matrix.InMatrix(position.Column, position.Row) ? Matrix[position.Column, position.Row] : null;
         }
     }
 }

@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
-
-
-namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis
+﻿namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis
 {
-    interface ITokenizer
+    internal interface ITokenizer
     {
         Token[] Tokenize(string text);
     }

@@ -4,7 +4,7 @@ using System;
 
 namespace SpreadsheetCalculator.Spreadsheet.CellParsing
 {
-    class CellParser : ICellParser
+    internal class CellParser : ICellParser
     {
         private readonly IExpressionFactory _expressionFactory;
 

@@ -9,7 +9,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
 {
     public class SpreadsheetCellTests
     {
-        readonly Mock<ICellExpression> _cellExpression;
+        private readonly Mock<ICellExpression> _cellExpression;
 
         public SpreadsheetCellTests()
         {
@@ -22,7 +22,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         {
             _cellExpression.Setup(foo => foo.IsValid).Returns(true);
 
-            Cell cell = new Cell(_cellExpression.Object);
+            var cell = new Cell(_cellExpression.Object);
 
             Assert.Equal(CellState.Pending, cell.CellState);
 
@@ -36,7 +36,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         {
             _cellExpression.Setup(foo => foo.IsValid).Returns(false);
 
-            Cell cell = new Cell(_cellExpression.Object);
+            var cell = new Cell(_cellExpression.Object);
 
             Assert.Equal(CellState.SyntaxError, cell.CellState);
 
@@ -46,11 +46,11 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         }
 
         [Fact]
-        public void Calculate_InvalidExpression_CellReaminsInErrorState()
+        public void Calculate_InvalidExpression_CellRemainsInErrorState()
         {
             _cellExpression.Setup(foo => foo.IsValid).Returns(false);
 
-            Cell cell = new Cell(_cellExpression.Object);
+            var cell = new Cell(_cellExpression.Object);
 
             Assert.Equal(CellState.SyntaxError, cell.CellState);
 
@@ -70,11 +70,11 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
             _cellExpression.Setup(foo => foo.IsEmpty).Returns(true);
             _cellExpression.Setup(foo => foo.Calculate(It.IsAny<IDependencyResolver>())).Returns(0);
 
-            Cell cell = new Cell(_cellExpression.Object);
+            var cell = new Cell(_cellExpression.Object);
 
             cell.Calculate(new Dictionary<string, ICell>());
 
-            Assert.Equal(CellState.Fulfilled, cell.CellState);
+            Assert.Equal(CellState.Calculated, cell.CellState);
 
             Assert.Equal(0, cell.CellValue.Value);
 
@@ -82,12 +82,12 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         }
 
         [Fact]
-        public void Calculate_CellReferenceMissied_CellInErrorState()
+        public void Calculate_CellReferenceMissed_CellInErrorState()
         {
             _cellExpression.Setup(foo => foo.IsValid).Returns(true);
             _cellExpression.Setup(foo => foo.IsEmpty).Returns(false);
 
-            Cell cell = new Cell(_cellExpression.Object);
+            var cell = new Cell(_cellExpression.Object);
 
             cell.Calculate(new Dictionary<string, ICell> { [""] = null });
 
@@ -101,12 +101,12 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         [Theory]
         [InlineData(CellState.SyntaxError)]
         [InlineData(CellState.CellValueError)]
-        public void Calculate_CellReferenceHasErorrState_CellInErrorState(CellState errorState)
+        public void Calculate_CellReferenceHasErrorState_CellInErrorState(CellState errorState)
         {
             _cellExpression.Setup(foo => foo.IsValid).Returns(true);
             _cellExpression.Setup(foo => foo.IsEmpty).Returns(false);
 
-            Cell cell = new Cell(_cellExpression.Object);
+            var cell = new Cell(_cellExpression.Object);
 
             var cellWithError = new Mock<ICell>();
             cellWithError.Setup(foo => foo.CellState).Returns(errorState);

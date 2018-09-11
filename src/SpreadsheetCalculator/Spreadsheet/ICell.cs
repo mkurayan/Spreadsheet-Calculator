@@ -3,7 +3,7 @@
     /// <summary>
     /// Data contract for spreadsheet cells.
     /// </summary>
-    interface ICell
+    internal interface ICell
     {
         /// <summary>
         /// Current cell state.

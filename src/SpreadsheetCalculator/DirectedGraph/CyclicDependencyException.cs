@@ -5,7 +5,7 @@ namespace SpreadsheetCalculator.DirectedGraph
     /// <summary>
     /// Use this exception when cyclic dependencies found. 
     /// </summary>
-    class CyclicDependencyException : Exception
+    internal class CyclicDependencyException : Exception
     {
         /// <summary>
         /// Initializes a new instance of the CyclicDependencyException class with

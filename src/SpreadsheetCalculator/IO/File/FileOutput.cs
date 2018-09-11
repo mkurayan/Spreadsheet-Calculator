@@ -1,12 +1,12 @@
-﻿using SpreadsheetCalculator.Spreadsheet;
-using System;
+﻿using System;
 using System.IO;
+using SpreadsheetCalculator.Spreadsheet;
 
-namespace SpreadsheetCalculator.IO
+namespace SpreadsheetCalculator.IO.File
 {
-    class FileOutput : IOutputStreamWriter
+    internal class FileOutput : IOutputStreamWriter
     {
-        public string File { get; private set; }
+        private string File { get; }
 
         public FileOutput(string file)
         {
@@ -15,7 +15,7 @@ namespace SpreadsheetCalculator.IO
 
         public void Write(IViewSpreadsheet spreadsheet)
         {
-            Console.WriteLine("Save spreadsheet to file.");
+            System.Console.WriteLine("Save spreadsheet to file.");
 
             using (var sOut = new StreamWriter(new FileStream(File, FileMode.OpenOrCreate)))
             {

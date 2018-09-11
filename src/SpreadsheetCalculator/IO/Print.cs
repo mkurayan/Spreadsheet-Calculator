@@ -1,31 +1,33 @@
-﻿using SpreadsheetCalculator.Spreadsheet;
+﻿using System.Collections.Generic;
+using SpreadsheetCalculator.Spreadsheet;
 using SpreadsheetCalculator.Utils;
 using System.Linq;
 using System.Text;
+using System;
 
 namespace SpreadsheetCalculator.IO
 {
-    class Print
+    internal static class Print
     {
-        public string PrintSpreadsheet(IViewSpreadsheet spreadsheet)
+        public static string PrintSpreadsheet(IViewSpreadsheet spreadsheet)
         {
-            VirtualSpreadsheet view = new VirtualSpreadsheet(spreadsheet);
+            var view = new VirtualSpreadsheet(spreadsheet);
 
             return PrintContent(view);
         }
 
-        public string PrintContent(IViewSpreadsheet spreadsheet)
+        private static string PrintContent(IViewSpreadsheet spreadsheet)
         {
             var columnsLength =
               Enumerable.Range(1, spreadsheet.ColumnsCount)
-                  .Select(column =>
-                      GetColumn(spreadsheet, column).Max(value => value.Length)
+                  .Select(columnIndex =>
+                      GetColumn(spreadsheet, columnIndex).Max(value => value.Length)
                   ).ToArray();
 
             // create the string format with padding
             var format = Enumerable.Range(0, spreadsheet.ColumnsCount)
                 .Select(i => " | {" + i + ",-" + columnsLength[i] + "}")
-                .Aggregate((s, a) => s + a) + " |";
+                .Aggregate((s, a) => s + a) + " |" + Environment.NewLine;
 
             // create the divider            
             var divider = " " + new string('-', columnsLength.Sum() + columnsLength.Length * 3 + 1) + " ";
@@ -34,31 +36,34 @@ namespace SpreadsheetCalculator.IO
 
             builder.AppendLine(divider);
 
-            for (var i = 1; i <= spreadsheet.RowsCount; i++)
+            for (var rowIndex = 1; rowIndex <= spreadsheet.RowsCount; rowIndex++)
             {
-                builder.AppendLine(string.Format(format, GetRow(spreadsheet, i)));
+                // ReSharper disable once CoVariantArrayConversion
+                object[] row = GetRow(spreadsheet, rowIndex).ToArray();
+                
+                builder.AppendFormat(format, row);
                 builder.AppendLine(divider);
             }
 
             return builder.ToString();
         }
 
-        private string[] GetRow(IViewSpreadsheet spreadsheet, int rowIndex)
+        private static IEnumerable<string> GetRow(IViewSpreadsheet spreadsheet, int rowIndex)
         {
-            return Enumerable.Range(1, spreadsheet.ColumnsCount)
-                        .Select(columnIndex => spreadsheet.GetValue(columnIndex, rowIndex))
-                        .ToArray();
+            return Enumerable
+                .Range(1, spreadsheet.ColumnsCount)
+                .Select(columnIndex => spreadsheet.GetValue(columnIndex, rowIndex));
 
         }
 
-        private string[] GetColumn(IViewSpreadsheet spreadsheet, int columnIndex)
+        private static IEnumerable<string> GetColumn(IViewSpreadsheet spreadsheet, int columnIndex)
         {
-            return Enumerable.Range(1, spreadsheet.RowsCount)
-                        .Select(rowIndex => spreadsheet.GetValue(columnIndex, rowIndex))
-                        .ToArray();
+            return Enumerable
+                .Range(1, spreadsheet.RowsCount)
+                .Select(rowIndex => spreadsheet.GetValue(columnIndex, rowIndex));
         }
 
-        class VirtualSpreadsheet : IViewSpreadsheet
+        private class VirtualSpreadsheet : IViewSpreadsheet
         {
             private IViewSpreadsheet View { get; }
 
@@ -71,13 +76,6 @@ namespace SpreadsheetCalculator.IO
                 View = view;
             }
 
-            public string GetValue(string key)
-            {
-                var position = new CellPosition(key);
-
-                return GetValue(position.Column, position.Row);
-            }
-
             public string GetValue(int column, int row)
             {
                 if (column == 1 && row == 1)
@@ -87,7 +85,7 @@ namespace SpreadsheetCalculator.IO
 
                 if (row == 1)
                 {
-                    return AlphabetConvertor.IntToLetters(column - 1);
+                    return AlphabetConverter.IntToLetters(column - 1);
                 }
 
                 if (column == 1)

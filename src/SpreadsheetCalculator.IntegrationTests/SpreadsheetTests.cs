@@ -1,14 +1,13 @@
 ﻿using Xunit;
 using SpreadsheetCalculator.Spreadsheet;
 using SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis.InfixNotation;
-using SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis;
 using SpreadsheetCalculator.Spreadsheet.CellParsing;
 
 namespace SpreadsheetCalculator.IntegrationTests
 {
     public class SpreadsheetTests
     {
-        readonly MathSpreadsheet _spreadsheet;
+        private readonly MathSpreadsheet _spreadsheet;
 
         public SpreadsheetTests()
         {
@@ -16,13 +15,13 @@ namespace SpreadsheetCalculator.IntegrationTests
         }
 
         [Fact]
-        public void Calculate_SpereadsheetWithoutCellReferences_AllCellsCalculated()
+        public void Calculate_SpreadsheetWithoutCellReferences_AllCellsCalculated()
         {
             _spreadsheet.SetSize(2, 3);
 
-            for (int row = 1; row <= _spreadsheet.RowsCount; row++)
+            for (var row = 1; row <= _spreadsheet.RowsCount; row++)
             {
-                for (int col = 1; col <= _spreadsheet.ColumnsCount; col++)
+                for (var col = 1; col <= _spreadsheet.ColumnsCount; col++)
                 {
                     _spreadsheet.SetValue(col, row, $"{col} {row} +");
                 }
@@ -30,11 +29,11 @@ namespace SpreadsheetCalculator.IntegrationTests
 
             _spreadsheet.Calculate();
 
-            for (int row = 1; row <= _spreadsheet.RowsCount; row++)
+            for (var row = 1; row <= _spreadsheet.RowsCount; row++)
             {
-                for (int col = 1; col <= _spreadsheet.ColumnsCount; col++)
+                for (var col = 1; col <= _spreadsheet.ColumnsCount; col++)
                 {
-                    int result = int.Parse(_spreadsheet.GetValue(col, row));
+                    var result = int.Parse(_spreadsheet.GetValue(col, row));
 
                     Assert.Equal(col + row, result);
                 }
@@ -42,7 +41,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         }
 
         [Fact]
-        public void Calculate_SpereadsheetWithCellReferencesOnly_AllCellsCalculated()
+        public void Calculate_SpreadsheetWithCellReferencesOnly_AllCellsCalculated()
         {
             _spreadsheet.SetSize(3, 2);
 
@@ -62,11 +61,11 @@ namespace SpreadsheetCalculator.IntegrationTests
 
             _spreadsheet.Calculate();
 
-            int expected = 0;
+            var expected = 0;
 
-            for (int row = 1; row <= _spreadsheet.RowsCount; row++)
+            for (var row = 1; row <= _spreadsheet.RowsCount; row++)
             {
-                for (int col = 1; col <= _spreadsheet.ColumnsCount; col++)
+                for (var col = 1; col <= _spreadsheet.ColumnsCount; col++)
                 {
                     expected++;
 
@@ -77,7 +76,7 @@ namespace SpreadsheetCalculator.IntegrationTests
 
 
         [Fact]
-        public void Calculate_TypicalSpereadsheet_AllCellsCalculated()
+        public void Calculate_TypicalSpreadsheet_AllCellsCalculated()
         {
             _spreadsheet.SetSize(3, 2);
 
@@ -113,7 +112,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         }
 
         [Fact]
-        public void Calculate_SpereadsheetWithCircularReferences_ThrowSpreadsheetInternallException()
+        public void Calculate_SpreadsheetWithCircularReferences_ThrowSpreadsheetInternalException()
         {
             _spreadsheet.SetSize(3, 1);
 
@@ -127,11 +126,11 @@ namespace SpreadsheetCalculator.IntegrationTests
             _spreadsheet.SetValue(2, 1, "1");
             _spreadsheet.SetValue(3, 1, "A1");
             
-            Assert.Throws<SpreadsheetInternallException>(() => _spreadsheet.Calculate());
+            Assert.Throws<SpreadsheetInternalException>(() => _spreadsheet.Calculate());
         }
 
         [Fact]
-        public void Calculate_InvalidCellReferenceInsSpereadsheet_ShowInvalidValueError()
+        public void Calculate_InvalidCellReferenceInsSpreadsheet_ShowInvalidValueError()
         {
             _spreadsheet.SetSize(3, 2);
 
@@ -161,7 +160,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         }
 
         [Fact]
-        public void Calculate_SpereadsheetWithInvalidMathematicalOperation_ShowNumberError()
+        public void Calculate_SpreadsheetWithInvalidMathematicalOperation_ShowNumberError()
         {
             _spreadsheet.SetSize(3, 1);
 
@@ -183,7 +182,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         }
 
         [Fact]
-        public void Calculate_SpereadsheetWithInvalidDataInCell_ShowNumberError()
+        public void Calculate_SpreadsheetWithInvalidDataInCell_ShowNumberError()
         {
             _spreadsheet.SetSize(3, 2);
 
@@ -212,7 +211,7 @@ namespace SpreadsheetCalculator.IntegrationTests
         }
 
         [Fact]
-        public void Calculate_SpereadsheetWithEmptyCell_CellsContainsDefaultValues() 
+        public void Calculate_SpreadsheetWithEmptyCell_CellsContainsDefaultValues() 
         {            
             _spreadsheet.SetSize(2, 1);
 

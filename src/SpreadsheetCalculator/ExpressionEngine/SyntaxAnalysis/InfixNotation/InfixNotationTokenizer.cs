@@ -2,9 +2,9 @@
 
 namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis.InfixNotation
 {
-    class InfixNotationTokenizer : Tokenizer
+    internal class InfixNotationTokenizer : Tokenizer
     { 
-        private static readonly Dictionary<char, TokenType> Map = new Dictionary<char, TokenType>()
+        private static readonly Dictionary<char, TokenType> Map = new Dictionary<char, TokenType>
         {
             ['+'] = TokenType.Add,
             ['*'] = TokenType.Multiply,

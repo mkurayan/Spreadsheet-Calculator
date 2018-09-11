@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace SpreadsheetCalculator.Spreadsheet
 {
-    class CellPosition
+    internal class CellPosition
     {
         private static readonly Regex KeyPattern = new Regex(@"^([a-zA-Z]+)(\d+)$");
 
@@ -12,43 +12,52 @@ namespace SpreadsheetCalculator.Spreadsheet
 
         public int Row { get; private set; }
 
-        public string Key { get; private set; }
+        private string Key { get; set; }
 
-        public CellPosition(int columnIndex, int rowIndex)
+        /// <summary>
+        /// Create cell position object from cell coordinates. 
+        /// </summary>
+        /// <param name="column">Column number in spreadsheet.</param>
+        /// <param name="row">Row number in spreadsheet.</param>
+        public CellPosition(int column, int row)
         {
-            SetPosition(columnIndex, rowIndex);
+            SetPosition(column, row);
         }
 
+        /// <summary>
+        /// Create cell position object from cell Id. 
+        /// </summary>
+        /// <param name="key">Spreadsheet cell Id. Example: A1, A2, etc.</param>
         public CellPosition(string key)
         {
             SetPosition(key);
         }
+        
+        public override string ToString()
+        {
+            return Key;
+        }
 
-        public void SetPosition(int column, int row)
+        private void SetPosition(int column, int row)
         {
             Column = column;
             Row = row;
 
-            Key = AlphabetConvertor.IntToLetters(column) + row;
+            Key = AlphabetConverter.IntToLetters(column) + row;
         }
 
-        public void SetPosition(string key)
+        private void SetPosition(string key)
         {
-            Match result = KeyPattern.Match(key);
+            var result = KeyPattern.Match(key);
 
-            string alphaPart = result.Groups[1].Value;
-            string numberPart = result.Groups[2].Value;
+            var alphaPart = result.Groups[1].Value;
+            var numberPart = result.Groups[2].Value;
 
-            BigInteger columnIndex = AlphabetConvertor.LettersToInt(alphaPart);
-            BigInteger rowIndex = BigInteger.Parse(numberPart);
+            var columnIndex = AlphabetConverter.LettersToInt(alphaPart);
+            var rowIndex = BigInteger.Parse(numberPart);
 
             Column = columnIndex > int.MaxValue ? -1 : (int)columnIndex;
             Row = rowIndex > int.MaxValue ? -1 : (int)rowIndex;
-        }
-
-        public override string ToString()
-        {
-            return Key;
         }
     }    
 }

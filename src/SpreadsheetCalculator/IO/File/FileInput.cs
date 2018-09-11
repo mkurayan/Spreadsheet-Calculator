@@ -1,13 +1,13 @@
-﻿using SpreadsheetCalculator.Spreadsheet;
-using System;
+﻿using System;
 using System.IO;
 using System.Linq;
+using SpreadsheetCalculator.Spreadsheet;
 
-namespace SpreadsheetCalculator.IO
+namespace SpreadsheetCalculator.IO.File
 {
-    class FileInput : IInputStreamReader
+    internal class FileInput : IInputStreamReader
     {
-        public string File { get; private set; }
+        private string File { get; }
 
         public FileInput(string file)
         {
@@ -16,11 +16,11 @@ namespace SpreadsheetCalculator.IO
 
         public void Read(IEditSpreadsheet spreadsheet)
         {
-            Console.WriteLine("Load spreadsheet from file.");
+            System.Console.WriteLine("Load spreadsheet from file.");
 
             using (var sIn = new StreamReader(new FileStream(File, FileMode.Open)))
             {
-                (int columnsCount, int rowsCount) = ParseHeader(sIn.ReadLine());
+                var (columnsCount, rowsCount) = ParseHeader(sIn.ReadLine());
 
                 spreadsheet.SetSize(columnsCount, rowsCount);
 
@@ -36,7 +36,7 @@ namespace SpreadsheetCalculator.IO
             }
         }
 
-        private (int columnsCount, int rowsCount) ParseHeader(string header)
+        private static (int columnsCount, int rowsCount) ParseHeader(string header)
         {
             var options = header.Split(' ').Where(token => !string.IsNullOrWhiteSpace(token)).ToArray();
 
@@ -45,12 +45,12 @@ namespace SpreadsheetCalculator.IO
                 throw new SpreadsheetFormatException($"File header has invalid format. Should be: columnsCount rowsCount. But was: {header}");
             }
 
-            if (!int.TryParse(options[0], out int columnsCount))
+            if (!int.TryParse(options[0], out var columnsCount))
             {
                 throw new SpreadsheetFormatException($"Invalid columns count: {options[0]}");
             }
 
-            if (!int.TryParse(options[1], out int rowsCount))
+            if (!int.TryParse(options[1], out var rowsCount))
             {
                 throw new SpreadsheetFormatException($"Invalid rows count: {options[1]}");
             }

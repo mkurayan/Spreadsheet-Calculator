@@ -1,11 +1,9 @@
 ﻿using SpreadsheetCalculator.ExpressionEngine.SyntaxTree;
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace SpreadsheetCalculator.Spreadsheet.CellParsing
 {
-    interface ICellExpression
+    internal interface ICellExpression
     {
         bool IsValid { get; }
 

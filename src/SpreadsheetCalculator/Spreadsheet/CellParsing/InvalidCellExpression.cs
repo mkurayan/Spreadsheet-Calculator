@@ -2,11 +2,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace SpreadsheetCalculator.Spreadsheet.CellParsing
 {
-    class InvalidCellExpression : ICellExpression
+    internal class InvalidCellExpression : ICellExpression
     {
         public bool IsValid => false;
 

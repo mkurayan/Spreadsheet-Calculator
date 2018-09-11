@@ -1,6 +1,6 @@
 ﻿namespace SpreadsheetCalculator.Spreadsheet
 {
-    interface IEditSpreadsheet
+    internal interface IEditSpreadsheet
     {
         /// <summary>
         /// Set spreadsheet size.
@@ -15,12 +15,6 @@
         /// <param name="column">Column number.</param>
         /// <param name="row">Row number.</param>
         /// <param name="value">Cell value.</param>
-        void SetValue(int column, int row, string value);
-
-        /// <summary>
-        /// Set cell value.
-        /// </summary>
-        /// <param name="key">Cell position.</param>
-        void SetValue(string key, string value);
+        void SetValue(int column, int row, string value);       
     }
 }

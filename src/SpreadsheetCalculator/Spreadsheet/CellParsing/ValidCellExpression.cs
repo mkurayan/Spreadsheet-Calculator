@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace SpreadsheetCalculator.Spreadsheet.CellParsing
 {
-    class ValidCellExpression : ICellExpression
+    internal class ValidCellExpression : ICellExpression
     {
         private readonly INode _treeTop;
 
@@ -26,9 +26,9 @@ namespace SpreadsheetCalculator.Spreadsheet.CellParsing
             return _treeTop.Evaluate(resolver);
         }
 
-        public ValidCellExpression(IEnumerable<Token> tokens, INode treeTop)
+        public ValidCellExpression(IReadOnlyCollection<Token> tokens, INode treeTop)
         {
-            IsEmpty = !tokens.Any();
+            IsEmpty = tokens.Count == 0;
 
             CellReferences = IsEmpty ?
                 Enumerable.Empty<string>() :

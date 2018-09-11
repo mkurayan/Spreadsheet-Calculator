@@ -6,9 +6,9 @@ namespace SpreadsheetCalculator.Spreadsheet
     /// A rectangular array of objects arranged in rows and columns.
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    class Matrix<T> where T : class
+    internal class Matrix<T> where T : class
     {
-        private T[,] Cells { get; set; }
+        private T[,] Cells { get; }
 
         /// <summary>
         /// Rows count in matrix.
@@ -61,9 +61,9 @@ namespace SpreadsheetCalculator.Spreadsheet
         /// <returns>All matrix elements row by row.</returns>
         public IEnumerable<T> AsEnumerable()
         {
-            for (int i = 0; i < ColumnsCount; i++)
+            for (var i = 0; i < ColumnsCount; i++)
             {
-                for (int j = 0; j < RowsCount; j++)
+                for (var j = 0; j < RowsCount; j++)
                 {
                     yield return Cells[i, j];
                 }

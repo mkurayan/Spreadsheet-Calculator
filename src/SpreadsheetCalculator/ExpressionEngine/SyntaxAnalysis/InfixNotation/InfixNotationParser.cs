@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis.InfixNotation
 {
-    class InfixNotationParser : IParser
+    internal class InfixNotationParser : IParser
     {
         public INode Parse(IEnumerable<Token> tokens)
         {

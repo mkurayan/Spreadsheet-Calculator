@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace SpreadsheetCalculator.Utils
 {
-    class AlphabetConvertor
+    internal static class AlphabetConverter
     {
         private const int AlphabetBase = 26;
 
@@ -43,7 +43,7 @@ namespace SpreadsheetCalculator.Utils
         {
             index--;
 
-            string letters = "";
+            var letters = "";
 
             if (index / AlphabetBase > 0)
             {
@@ -61,7 +61,7 @@ namespace SpreadsheetCalculator.Utils
 
             if (letters.Length > 1)
             {
-                index += AlphabetBase * (ToInt(letters.Remove(letters.Length - 1)));
+                index += AlphabetBase * ToInt(letters.Remove(letters.Length - 1));
             }
 
             index += Alphabet.IndexOf(letters[letters.Length - 1]) + 1;

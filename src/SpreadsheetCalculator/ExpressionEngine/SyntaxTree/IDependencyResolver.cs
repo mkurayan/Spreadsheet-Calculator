@@ -1,7 +1,7 @@
 ﻿namespace SpreadsheetCalculator.ExpressionEngine.SyntaxTree
 {
-    interface IDependencyResolver
+    internal interface IDependencyResolver
     {
-        double ResolveCellreference(string key);
+        double ResolveCellReference(string key);
     }
 }

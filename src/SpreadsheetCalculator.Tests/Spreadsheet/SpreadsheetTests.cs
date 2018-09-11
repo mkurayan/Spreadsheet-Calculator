@@ -8,7 +8,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
 {
     public class SpreadsheetTests
     {
-        readonly MathSpreadsheet _spreadsheet;
+        private readonly MathSpreadsheet _spreadsheet;
 
         public SpreadsheetTests()
         {
@@ -34,7 +34,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         }
 
         [Fact]
-        public void SpreadsheetConstructor_ArgumentsIsNullMissied_ThrowNullArgumentException()
+        public void SpreadsheetConstructor_ArgumentsIsNullMissed_ThrowNullArgumentException()
         {
             Assert.Throws<ArgumentNullException>(() => new MathSpreadsheet(null));
         }
@@ -80,7 +80,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         {
             _spreadsheet.SetSize(1, 1);
 
-            var cellValue = "dummy"; ;
+            const string cellValue = "dummy";
 
             _spreadsheet.SetValue(1, 1, cellValue);
 
@@ -90,24 +90,24 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         [Fact]
         public void SetAllCellsInSpreadsheet_CellValueButNotCalculate_AllCellsHavePendingState()
         {
-            int columnNumber = 2;
-            int rowNumber = 3;
+            const int columnNumber = 2;
+            const int rowNumber = 3;
 
             string CellCoordinatesToString(int i, int j) => $"row: {i} column: {j}";
 
             _spreadsheet.SetSize(rowNumber, columnNumber);
 
-            for (int i = 1; i <= rowNumber; i++)
+            for (var i = 1; i <= rowNumber; i++)
             {
-                for (int j = 1; j <= columnNumber; j++)
+                for (var j = 1; j <= columnNumber; j++)
                 {
                     _spreadsheet.SetValue(i, j, CellCoordinatesToString(i, j));
                 }
             }
 
-            for (int i = 1; i <= rowNumber; i++)
+            for (var i = 1; i <= rowNumber; i++)
             {
-                for (int j = 1; j <= columnNumber; j++)
+                for (var j = 1; j <= columnNumber; j++)
                 {
                     Assert.Equal("#PENDING!", _spreadsheet.GetValue(i, j));
                 }

@@ -3,17 +3,19 @@ using SpreadsheetCalculator.IO;
 using SpreadsheetCalculator.Spreadsheet;
 using SpreadsheetCalculator.Spreadsheet.CellParsing;
 using System;
+using SpreadsheetCalculator.IO.Console;
+using SpreadsheetCalculator.IO.File;
 
 namespace SpreadsheetCalculator
 {
-    class Program
+    internal static class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             var inputFile = args.Length > 0 ? args[0] :null;
             var outputFile = args.Length > 1 ? args[1] : null;
 
-            MathSpreadsheet spreadsheet = new MathSpreadsheet(new CellParser(new InfixExpressionFactory()));
+            var spreadsheet = new MathSpreadsheet(new CellParser(new InfixExpressionFactory()));
 
             var reader = GetTextReader(inputFile);
 
@@ -26,7 +28,7 @@ namespace SpreadsheetCalculator
 
                 spreadsheet.Calculate();
             }
-            catch (Exception ex) when (ex is SpreadsheetFormatException || ex is SpreadsheetInternallException)
+            catch (Exception ex) when (ex is SpreadsheetFormatException || ex is SpreadsheetInternalException)
             {
                 Console.WriteLine(ex.Message);
                 return;

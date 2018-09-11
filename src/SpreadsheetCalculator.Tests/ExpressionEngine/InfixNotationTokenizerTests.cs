@@ -9,7 +9,7 @@ namespace SpreadsheetCalculator.Tests.ExpressionEngine
    
     public class InfixNotationTokenizerTests
     {
-        InfixNotationTokenizer Tokenizer { get; }
+        private InfixNotationTokenizer Tokenizer { get; }
 
         public InfixNotationTokenizerTests()
         {
@@ -37,7 +37,7 @@ namespace SpreadsheetCalculator.Tests.ExpressionEngine
         {
             var tokens = Tokenizer.Tokenize(value);
 
-            Assert.Equal(expectedTokenCount, tokens.Count());
+            Assert.Equal(expectedTokenCount, tokens.Length);
         }
 
         [Theory]        
@@ -88,7 +88,7 @@ namespace SpreadsheetCalculator.Tests.ExpressionEngine
         {
             var tokens = Tokenizer.Tokenize(value);
 
-            Assert.Equal(expectedCount, tokens.Where(token => token.Type == TokenType.CellReference).Count());
+            Assert.Equal(expectedCount, tokens.Count(token => token.Type == TokenType.CellReference));
         }
 
         [Theory]
@@ -112,7 +112,7 @@ namespace SpreadsheetCalculator.Tests.ExpressionEngine
         {
             var tokens = Tokenizer.Tokenize(value);
 
-            Assert.Equal(expectedCount, tokens.Where(token => token.Type == TokenType.Number).Count());
+            Assert.Equal(expectedCount, tokens.Count(token => token.Type == TokenType.Number));
         }
 
         [Theory]
@@ -122,7 +122,7 @@ namespace SpreadsheetCalculator.Tests.ExpressionEngine
         [InlineData("/", TokenType.Divide)]
         [InlineData("(", TokenType.OpenParenthesis)]
         [InlineData(")", TokenType.CloseParenthesis)]
-        public void CreateNewCellToken_SyngleSymbol_ValidToken(string value, TokenType expectedType)
+        public void CreateNewCellToken_SingleSymbol_ValidToken(string value, TokenType expectedType)
         {
             Assert.Equal(expectedType, Tokenizer.Tokenize(value).First().Type);
         }
@@ -141,8 +141,8 @@ namespace SpreadsheetCalculator.Tests.ExpressionEngine
         {
             var tokens = Tokenizer.Tokenize(value);
 
-            Assert.Equal(expectedCount, tokens.Where(token => token.Type == TokenType.OpenParenthesis).Count());
-            Assert.Equal(expectedCount, tokens.Where(token => token.Type == TokenType.CloseParenthesis).Count());
+            Assert.Equal(expectedCount, tokens.Count(token => token.Type == TokenType.OpenParenthesis));
+            Assert.Equal(expectedCount, tokens.Count(token => token.Type == TokenType.CloseParenthesis));
         }
     }
 }

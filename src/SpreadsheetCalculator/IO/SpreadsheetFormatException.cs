@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace SpreadsheetCalculator.IO
 {
-    class SpreadsheetFormatException : Exception
+    internal class SpreadsheetFormatException : Exception
     {
         /// <summary>
         /// Initializes a new instance of the SpreadsheetFormatException class with

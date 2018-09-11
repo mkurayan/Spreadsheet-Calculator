@@ -1,6 +1,6 @@
 ﻿namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis
 {
-    interface IExpressionFactory
+    internal interface IExpressionFactory
     {
         IParser CreateParser();
         ITokenizer CreateTokenizer();

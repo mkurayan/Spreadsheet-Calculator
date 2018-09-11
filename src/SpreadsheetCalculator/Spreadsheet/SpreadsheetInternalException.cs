@@ -2,14 +2,14 @@
 
 namespace SpreadsheetCalculator.Spreadsheet
 {
-    class SpreadsheetInternallException : Exception
+    internal class SpreadsheetInternalException : Exception
     {
         /// <summary>
-        /// Initializes a new instance of the SpreadsheetInternallException class with
+        /// Initializes a new instance of the SpreadsheetInternalException class with
         /// a specified error message.
         /// </summary>
         /// <param name="message">The message that describes the error</param>
-        public SpreadsheetInternallException(string message) : base(message)
+        public SpreadsheetInternalException(string message) : base(message)
         {
         }
 
@@ -19,7 +19,7 @@ namespace SpreadsheetCalculator.Spreadsheet
         /// </summary>
         /// <param name="message">The message that describes the error.</param>
         /// <param name="innerException">The exception that is the cause of the current exception or null if no inner exception is specified.</param>
-        public SpreadsheetInternallException(string message, Exception innerException) : base(message, innerException)
+        public SpreadsheetInternalException(string message, Exception innerException) : base(message, innerException)
         {
         }
     }

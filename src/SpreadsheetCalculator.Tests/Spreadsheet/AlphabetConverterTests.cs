@@ -4,11 +4,11 @@ using Xunit;
 
 namespace SpreadsheetCalculator.Tests.Spreadsheet
 {
-    public class AlphabetConvertorTests
+    public class AlphabetConverterTests
     {
-        Sample[] Samples { get; }
+        private Sample[] Samples { get; }
 
-        public AlphabetConvertorTests()
+        public AlphabetConverterTests()
         {
             Samples = new Sample[] {
                 new Sample(1, "A"),
@@ -31,7 +31,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         {
             foreach (var sample in Samples)
             {
-                Assert.Equal(sample.Letters, AlphabetConvertor.IntToLetters(sample.Number));
+                Assert.Equal(sample.Letters, AlphabetConverter.IntToLetters(sample.Number));
             }
         }
 
@@ -40,23 +40,23 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         {
             foreach (var sample in Samples)
             {
-                Assert.Equal(sample.Number, AlphabetConvertor.LettersToInt(sample.Letters));
+                Assert.Equal(sample.Number, AlphabetConverter.LettersToInt(sample.Letters));
             }
         }
 
         [Fact]
-        public void TwiceConvertion_AlphabeticLetters_TheSameLetters()
+        public void TwiceConvertation_AlphabeticLetters_TheSameLetters()
         {
             foreach (var sample in Samples)
             {
-                Assert.Equal(sample.Letters, AlphabetConvertor.IntToLetters((int)AlphabetConvertor.LettersToInt(sample.Letters)));
+                Assert.Equal(sample.Letters, AlphabetConverter.IntToLetters((int)AlphabetConverter.LettersToInt(sample.Letters)));
             }
         }
 
         [Fact]
         public void IntToLetters_Zero_ThrowIndexOutOfRangeException()
         {
-            Assert.Throws<IndexOutOfRangeException>(() => AlphabetConvertor.IntToLetters(0));
+            Assert.Throws<IndexOutOfRangeException>(() => AlphabetConverter.IntToLetters(0));
         }
 
         [Theory]
@@ -64,13 +64,13 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         [InlineData(int.MinValue)]
         public void IntToLetters_NegativeNumber_ThrowIndexOutOfRangeException(int number)
         {
-            Assert.Throws<IndexOutOfRangeException>(() => AlphabetConvertor.IntToLetters(number));
+            Assert.Throws<IndexOutOfRangeException>(() => AlphabetConverter.IntToLetters(number));
         }
 
         [Fact]
         public void LettersToInt_Null_ThrowArgumentNullException()
         {
-            Assert.Throws<ArgumentNullException>(() => AlphabetConvertor.LettersToInt(null));
+            Assert.Throws<ArgumentNullException>(() => AlphabetConverter.LettersToInt(null));
         }
 
         [Theory]
@@ -80,7 +80,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         [InlineData("1A")]
         public void LettersToInt_UnknownSymbols_ThrowFormatException(string letters)
         {
-            Assert.Throws<FormatException>(() => AlphabetConvertor.LettersToInt(letters));
+            Assert.Throws<FormatException>(() => AlphabetConverter.LettersToInt(letters));
         }
 
         private struct Sample

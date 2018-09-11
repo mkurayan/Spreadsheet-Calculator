@@ -1,6 +1,6 @@
 ﻿namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis
 {
-    struct Token
+    internal struct Token
     {
         public TokenType Type { get; }
 

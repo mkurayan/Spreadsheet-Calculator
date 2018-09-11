@@ -1,6 +1,6 @@
 ﻿namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis.InfixNotation
 {
-    class InfixExpressionFactory : IExpressionFactory
+    internal class InfixExpressionFactory : IExpressionFactory
     {
         public IParser CreateParser()
         {

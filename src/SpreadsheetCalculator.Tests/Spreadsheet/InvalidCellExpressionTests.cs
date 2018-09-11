@@ -8,7 +8,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
 {
     public class InvalidCellExpressionTests
     {
-        readonly InvalidCellExpression _invalidExpression;
+        private readonly InvalidCellExpression _invalidExpression;
 
         public InvalidCellExpressionTests()
         {
@@ -29,7 +29,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         [Fact]
         public void Calculate_InvalidCellExpression_ThrowInvalidOperationException()
         {
-            Mock<IDependencyResolver> resolver = new Mock<IDependencyResolver>();
+            var resolver = new Mock<IDependencyResolver>();
 
             Assert.Throws<InvalidOperationException>(() => _invalidExpression.Calculate(resolver.Object));
         }

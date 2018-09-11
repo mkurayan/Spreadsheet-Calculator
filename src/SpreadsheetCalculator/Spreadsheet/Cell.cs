@@ -2,6 +2,7 @@
 using SpreadsheetCalculator.Spreadsheet.CellParsing;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace SpreadsheetCalculator.Spreadsheet
@@ -9,7 +10,7 @@ namespace SpreadsheetCalculator.Spreadsheet
     /// <summary>
     /// Concrete cell in the spreadsheet.
     /// </summary>
-    class Cell : ICell
+    internal class Cell : ICell
     {
         public double? CellValue { get; private set; }
 
@@ -22,7 +23,7 @@ namespace SpreadsheetCalculator.Spreadsheet
         /// <summary>
         /// Create new SpreadsheetCell.
         /// </summary>
-        /// <param name="value">Cell value.</param>
+        /// <param name="expression">Parsed math expression.</param>
         public Cell(ICellExpression expression)
         {
             _expression = expression;
@@ -30,6 +31,10 @@ namespace SpreadsheetCalculator.Spreadsheet
             CellState = expression.IsValid ? CellState.Pending : CellState.SyntaxError;
         }
 
+        /// <summary>
+        /// Calculate cell in spreadsheet,
+        /// </summary>
+        /// <param name="cellDependencies">Dictionary with all cell dependencies (references to another cells)</param>
         public void Calculate(Dictionary<string, ICell> cellDependencies)
         {
             if (_expression.IsValid)
@@ -42,16 +47,16 @@ namespace SpreadsheetCalculator.Spreadsheet
 
                 if (cellDependencies.Any(c => c.Value.CellState == CellState.Pending))
                 {
-                    throw new SpreadsheetInternallException("Calculation flow error, one of the cell references were missed.");
+                    throw new SpreadsheetInternalException("Calculation flow error, one of the cell references were missed.");
                 }
 
-                if (cellDependencies.Any(c => c.Value.CellState != CellState.Fulfilled))
+                if (cellDependencies.Any(c => c.Value.CellState != CellState.Calculated))
                 {
                     SetError();
                     return;
                 }
 
-                double value = _expression.Calculate(new DependencyResolver(cellDependencies));
+                var value = _expression.Calculate(new DependencyResolver(cellDependencies));
 
                 SetValue(value);
             }
@@ -64,7 +69,7 @@ namespace SpreadsheetCalculator.Spreadsheet
 
             void SetValue(double value)
             {
-                CellState = CellState.Fulfilled;
+                CellState = CellState.Calculated;
                 CellValue = value;
             }
         }
@@ -79,10 +84,10 @@ namespace SpreadsheetCalculator.Spreadsheet
             {
                 case CellState.Pending:
                     return "#PENDING!";
-                case CellState.Fulfilled:
+                case CellState.Calculated:
                     if (CellValue.HasValue)
                     {
-                        return CellValue.Value.ToString();
+                        return CellValue.Value.ToString(CultureInfo.InvariantCulture);
                     }
                     else
                     {
@@ -97,18 +102,23 @@ namespace SpreadsheetCalculator.Spreadsheet
             }
         }
 
-        class DependencyResolver : IDependencyResolver
+        private class DependencyResolver : IDependencyResolver
         {
-            readonly Dictionary<string, ICell> _cellDependencies;
+            private readonly Dictionary<string, ICell> _cellDependencies;
 
             public DependencyResolver(Dictionary<string, ICell> cellDependencies)
             {
                 _cellDependencies = cellDependencies;
             }
 
-            public double ResolveCellreference(string key)
+            public double ResolveCellReference(string key)
             {
-                return _cellDependencies[key].CellValue.Value;
+                if (_cellDependencies.TryGetValue(key, out var cell) && cell.CellState == CellState.Calculated && cell.CellValue.HasValue)
+                {
+                    return cell.CellValue.Value;
+                }
+
+                throw new SpreadsheetInternalException("Calculation flow error, cannot resolve cell reference.");
             }
         }
     }
