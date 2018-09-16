@@ -1,4 +1,6 @@
-﻿namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis.InfixNotation
+﻿using System.Collections.Generic;
+
+namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis.InfixNotation
 {
     internal class InfixExpressionFactory : IExpressionFactory
     {
@@ -9,7 +11,15 @@
 
         public ITokenizer CreateTokenizer()
         {
-            return new InfixNotationTokenizer();
+            return new Tokenizer(new Dictionary<char, TokenType>
+            {
+                ['+'] = TokenType.Add,
+                ['*'] = TokenType.Multiply,
+                ['-'] = TokenType.Subtract,
+                ['/'] = TokenType.Divide,
+                ['('] = TokenType.OpenParenthesis,
+                [')'] = TokenType.CloseParenthesis
+            });
         }
     }
 }

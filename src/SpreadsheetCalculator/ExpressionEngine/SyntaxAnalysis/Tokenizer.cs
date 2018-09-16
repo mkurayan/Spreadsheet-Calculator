@@ -1,23 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis
 {   
     /// <summary>
     /// Split string to tokens.
     /// </summary>
-    internal abstract class Tokenizer : ITokenizer
+    internal class Tokenizer : ITokenizer
     {
-        protected abstract Dictionary<char, TokenType> SymbolsMap { get; }
+        private Dictionary<char, TokenType> SymbolsMap { get; }
 
-        private Stack<char> _symbolsStack;
+        private StackString _symbolsStack;
+
+        public Tokenizer(Dictionary<char, TokenType> map)
+        {
+            SymbolsMap = map;
+        }
 
         public Token[] Tokenize(string str)
         {
-            var tokens = new List<Token>();
+            _symbolsStack = new StackString(str);
 
-            _symbolsStack = new Stack<char>(str.ToCharArray().Reverse());
+            var tokens = new List<Token>();
 
             while (_symbolsStack.TryPeek(out var ch))
             {
@@ -30,6 +34,8 @@ namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis
                 tokens.Add(ReadToken());
             }
 
+            _symbolsStack = null;
+
             return tokens.ToArray();
         }
 
@@ -39,7 +45,8 @@ namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis
 
             if (SymbolsMap.ContainsKey(nextChar))
             {
-                return CharToToken(_symbolsStack.Pop());
+                var ch = _symbolsStack.Pop();
+                return new Token(SymbolsMap[ch], ch);
             }
 
             // Token is number
@@ -54,73 +61,111 @@ namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis
                 return ReadCellReferenceToken();
             }
 
-            throw new SyntaxException();
+            throw new SyntaxException("Unknown symbol.");
         }
 
-        private Token CharToToken(char ch) => new Token(SymbolsMap[ch], ch);
+        private int ReadDigits() => ReadSequence(char.IsDigit);
 
-        private char[] ReadDigits() => ReadSequence(char.IsDigit).ToArray();
+        private int ReadLetters() => ReadSequence(char.IsLetter);
 
-        private char[] ReadLetters() => ReadSequence(char.IsLetter).ToArray();
-
-        private IEnumerable<char> ReadSequence(Func<char, bool> check)
+        private int ReadSequence(Func<char, bool> check)
         {
+            var count = 0;
+
             while (_symbolsStack.TryPeek(out var ch) && check(ch))
             {
-                yield return _symbolsStack.Pop();
+                _symbolsStack.Pop();
+                count++;
             }
+
+            return count;
         }
 
         private Token ReadNumberToken()
         {
-            var number = ReadDigits();
+            var startIndex = _symbolsStack.Index;
 
+            // Read integer part.
+            var integerPart = ReadDigits();
+            var decimalPart = 0;
+
+            // Check if number contains decimal part. 
             if (_symbolsStack.TryPeek(out var nextChar) && nextChar == '.')
             {
                 //Skip '.' symbol
                 _symbolsStack.Pop();
 
-                var decimalPart = ReadDigits();
-
-                if (decimalPart.Length > 0)
-                {
-                    var integerPartLength = number.Length;
-
-                    Array.Resize(ref number, integerPartLength + decimalPart.Length + 1);
-                    number[integerPartLength] = '.';
-                    decimalPart.CopyTo(number, integerPartLength + 1);
-                }
-
-                if (number.Length == 0)
-                {
-                    throw new SyntaxException();
-                }
+                // Read decimal part.
+                decimalPart = ReadDigits();
             }
 
-            return new Token(TokenType.Number, new string(number));
+            if (integerPart == 0 && decimalPart == 0)
+            {
+                throw new SyntaxException("Invalid number.");
+            }
+
+            return new Token(TokenType.Number, _symbolsStack.Substring(startIndex, _symbolsStack.Index - startIndex));
         }
 
         private Token ReadCellReferenceToken()
         {
-            var letterPart = ReadLetters();
+            var startIndex = _symbolsStack.Index;
 
-            var digitPart = ReadDigits();
+            // Read letters part.
+            var letters = ReadLetters();
 
-            if (letterPart.Length == 0 || digitPart.Length == 0)
+            // Read digits part. 
+            var digits = ReadDigits();
+
+            if (letters == 0 || digits == 0)
             {
-                throw new SyntaxException();
+                throw new SyntaxException("Invalid cell reference.");
             }
             
-            // Result cell reference.
-            var cellReference = new char[letterPart.Length + digitPart.Length];
-            
-            // Copy letters.
-            Array.Copy(letterPart, cellReference, letterPart.Length);
+            return new Token(TokenType.CellReference, _symbolsStack.Substring(startIndex, _symbolsStack.Index - startIndex));
+        }
 
-            // Copy digits.
-            Array.Copy(digitPart, 0, cellReference, letterPart.Length, digitPart.Length);
-           
-            return new Token(TokenType.CellReference, string.Concat(cellReference));
+        private class StackString
+        {
+            private readonly string _text;
+
+            public int Index { get; private set; }
+
+            public StackString(string str)
+            {
+                Index = 0;
+                _text = str;
+            }
+
+            public bool TryPeek(out char ch)
+            {
+                if (Index < _text.Length)
+                {
+                    ch = Peek();
+                    return true;
+                }
+
+                ch = char.MinValue;
+                return false;
+            }
+
+            public char Peek()
+            {
+                return _text[Index];
+            }
+
+            public char Pop()
+            {
+                var ch = Peek();
+                Index++;
+
+                return ch;
+            }
+
+            public string Substring(int startIndex, int length)
+            {
+                return _text.Substring(startIndex, length);
+            }
         }
     }
 }

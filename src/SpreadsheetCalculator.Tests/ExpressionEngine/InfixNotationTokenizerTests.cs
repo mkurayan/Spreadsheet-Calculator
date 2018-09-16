@@ -6,14 +6,13 @@ using Xunit;
 
 namespace SpreadsheetCalculator.Tests.ExpressionEngine
 {
-   
     public class InfixNotationTokenizerTests
     {
-        private InfixNotationTokenizer Tokenizer { get; }
+        private ITokenizer Tokenizer { get; }
 
         public InfixNotationTokenizerTests()
         {
-            Tokenizer = new InfixNotationTokenizer();
+            Tokenizer = new InfixExpressionFactory().CreateTokenizer();
         }
 
         [Theory]
