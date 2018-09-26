@@ -18,7 +18,7 @@ namespace SpreadsheetCalculator.Spreadsheet.CellParsing
             try
             {
                 var tokens = _expressionFactory.CreateTokenizer().Tokenize(text);
-
+                
                 var syntaxTree = _expressionFactory.CreateParser().Parse(tokens);
 
                 return new ValidCellExpression(tokens, syntaxTree);

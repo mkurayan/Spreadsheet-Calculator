@@ -20,6 +20,22 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
 
             Assert.Empty(exp.CellReferences);
         }
+        
+        [Fact]
+        public void CreateNew_MultipleReferenceToCell_CorrectDependenciesCount()
+        {
+            var exp = new ValidCellExpression(new[] {
+                new Token(TokenType.CellReference, "A1"),
+                new Token(TokenType.CellReference, "A1"),
+                new Token(TokenType.CellReference, "A1"),
+                new Token(TokenType.CellReference, "A2"),
+                new Token(TokenType.CellReference, "A2"),
+                new Token(TokenType.CellReference, "A3")
+            }, null);
+
+            
+            Assert.Equal(3, exp.CellReferences.Count);
+        }
 
         [Fact]
         public void CalculateExpression_EmptyExpression_ReturnZero()
@@ -41,7 +57,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
                 new Token(TokenType.Divide, ""),
                 new Token(TokenType.Multiply, ""),
                 new Token(TokenType.OpenParenthesis, ""),
-                new Token(TokenType.CloseParenthesis, ""),
+                new Token(TokenType.CloseParenthesis, "")
             }, null);
 
             Assert.Empty(exp.CellReferences);

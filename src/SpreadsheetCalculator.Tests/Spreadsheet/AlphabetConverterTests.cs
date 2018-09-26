@@ -10,7 +10,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
 
         public AlphabetConverterTests()
         {
-            Samples = new Sample[] {
+            Samples = new[] {
                 new Sample(1, "A"),
                 new Sample(2, "B"),
                 new Sample(26, "Z"),
@@ -45,7 +45,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         }
 
         [Fact]
-        public void TwiceConvertation_AlphabeticLetters_TheSameLetters()
+        public void DoubleConversion_AlphabeticLetters_TheSameLetters()
         {
             foreach (var sample in Samples)
             {

@@ -1,7 +1,6 @@
 ﻿using SpreadsheetCalculator.ExpressionEngine.SyntaxTree;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace SpreadsheetCalculator.Spreadsheet.CellParsing
 {
@@ -11,7 +10,7 @@ namespace SpreadsheetCalculator.Spreadsheet.CellParsing
 
         public bool IsEmpty => false;
 
-        public IEnumerable<string> CellReferences => Enumerable.Empty<string>();
+        public HashSet<string> CellReferences => new HashSet<string>();
 
         public double Calculate(IDependencyResolver resolver)
         {

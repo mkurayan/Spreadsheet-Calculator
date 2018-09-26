@@ -13,7 +13,7 @@ namespace SpreadsheetCalculator.Spreadsheet.CellParsing
 
         public bool IsEmpty { get; }
 
-        public IEnumerable<string> CellReferences { get; }
+        public HashSet<string> CellReferences { get; }
 
         public double Calculate(IDependencyResolver resolver)
         {
@@ -30,9 +30,7 @@ namespace SpreadsheetCalculator.Spreadsheet.CellParsing
         {
             IsEmpty = tokens.Count == 0;
 
-            CellReferences = IsEmpty ?
-                Enumerable.Empty<string>() :
-                tokens.Where(token => token.Type == TokenType.CellReference).Select(token => token.Value).ToList();
+            CellReferences = tokens.Where(token => token.Type == TokenType.CellReference).Select(token => token.Value).ToHashSet();
 
             _treeTop = treeTop;
         }

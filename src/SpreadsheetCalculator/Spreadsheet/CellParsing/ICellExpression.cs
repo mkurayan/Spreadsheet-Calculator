@@ -9,7 +9,7 @@ namespace SpreadsheetCalculator.Spreadsheet.CellParsing
 
         bool IsEmpty { get; }
 
-        IEnumerable<string> CellReferences { get; }
+        HashSet<string> CellReferences { get; }
 
         double Calculate(IDependencyResolver resolver);
     }

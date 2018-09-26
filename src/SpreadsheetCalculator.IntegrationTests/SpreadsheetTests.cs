@@ -23,7 +23,7 @@ namespace SpreadsheetCalculator.IntegrationTests
             {
                 for (var col = 1; col <= _spreadsheet.ColumnsCount; col++)
                 {
-                    _spreadsheet.SetValue(col, row, $"{col} {row} +");
+                    _spreadsheet.SetValue(col, row, $"{col} + {row}");
                 }
             }
 
@@ -167,18 +167,18 @@ namespace SpreadsheetCalculator.IntegrationTests
             /*
              *    |  A   |    B    |  C 
              *    |______|_________|_______
-             *  1 |  0   |  2 A1 / |  B1 1 +   
+             *  1 |  0   |  1 / A1 | A1 / A1   
              */
 
             _spreadsheet.SetValue(1, 1, "0");
-            _spreadsheet.SetValue(2, 1, "2 / A1");
-            _spreadsheet.SetValue(3, 1, "B1 + 1");
+            _spreadsheet.SetValue(2, 1, "1 / A1");
+            _spreadsheet.SetValue(3, 1, "A1 / A1");
 
             _spreadsheet.Calculate();
 
             Assert.Equal("0", _spreadsheet.GetValue(1, 1));
-            Assert.Equal("#NUM!", _spreadsheet.GetValue(2, 1));
-            Assert.Equal("#VALUE!", _spreadsheet.GetValue(3, 1));
+            Assert.Equal("Infinity", _spreadsheet.GetValue(2, 1));
+            Assert.Equal("NaN", _spreadsheet.GetValue(3, 1));
         }
 
         [Fact]
@@ -189,7 +189,7 @@ namespace SpreadsheetCalculator.IntegrationTests
             /*
              *    |    A   |    B    |    C      |
              *    |________|_________|___________|
-             *  1 | BlaBla |    A1   |  BlaBla 1 + 
+             *  1 | BlaBla |    A1   |  BlaBla + 1 
              *  2 |  1 + 1 |  1 2 3  |  1 2 + +
              */
 
@@ -202,12 +202,12 @@ namespace SpreadsheetCalculator.IntegrationTests
 
             _spreadsheet.Calculate();
 
-            Assert.Equal("#VALUE!", _spreadsheet.GetValue(1, 1));
+            Assert.Equal("#SYNTAX!", _spreadsheet.GetValue(1, 1));
             Assert.Equal("#VALUE!", _spreadsheet.GetValue(2, 1));
-            Assert.Equal("#VALUE!", _spreadsheet.GetValue(3, 1));
-            Assert.Equal("#VALUE!", _spreadsheet.GetValue(1, 2));
-            Assert.Equal("#VALUE!", _spreadsheet.GetValue(2, 2));
-            Assert.Equal("#VALUE!", _spreadsheet.GetValue(3, 2));
+            Assert.Equal("#SYNTAX!", _spreadsheet.GetValue(3, 1));
+            Assert.Equal("#SYNTAX!", _spreadsheet.GetValue(1, 2));
+            Assert.Equal("#SYNTAX!", _spreadsheet.GetValue(2, 2));
+            Assert.Equal("#SYNTAX!", _spreadsheet.GetValue(3, 2));
         }
 
         [Fact]
