@@ -1,26 +1,29 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis
+namespace SpreadsheetCalculator.ExpressionEngine.Tokenization
 {   
     /// <summary>
     /// Split string to tokens.
     /// </summary>
     internal class Tokenizer : ITokenizer
     {
-        private Dictionary<char, TokenType> SymbolsMap { get; }
+        private static readonly Dictionary<char, TokenType> SymbolsMap = new Dictionary<char, TokenType> 
+        {
+            ['+'] = TokenType.Add,
+            ['*'] = TokenType.Multiply,
+            ['-'] = TokenType.Subtract,
+            ['/'] = TokenType.Divide,
+            ['('] = TokenType.OpenParenthesis,
+            [')'] = TokenType.CloseParenthesis
+        };
 
         private StackString _symbolsStack;
-
-        public Tokenizer(Dictionary<char, TokenType> map)
-        {
-            SymbolsMap = map;
-        }
 
         public Token[] Tokenize(string str)
         {
             _symbolsStack = new StackString(str);
-
+            
             var tokens = new List<Token>();
 
             while (_symbolsStack.TryPeek(out var ch))

@@ -1,7 +1,7 @@
-﻿using Xunit;
+﻿using SpreadsheetCalculator.ExpressionEngine.Parsing;
+using SpreadsheetCalculator.ExpressionEngine.Tokenization;
+using Xunit;
 using SpreadsheetCalculator.Spreadsheet;
-using SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis.InfixNotation;
-using SpreadsheetCalculator.Spreadsheet.CellParsing;
 
 namespace SpreadsheetCalculator.IntegrationTests
 {
@@ -11,7 +11,7 @@ namespace SpreadsheetCalculator.IntegrationTests
 
         public SpreadsheetTests()
         {
-            _spreadsheet = new MathSpreadsheet(new CellParser(new InfixExpressionFactory()));
+            _spreadsheet = new MathSpreadsheet(new Parser(), new Tokenizer());
         }
 
         [Fact]

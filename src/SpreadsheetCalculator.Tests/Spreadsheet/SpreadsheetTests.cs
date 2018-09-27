@@ -1,7 +1,8 @@
 ﻿using System;
 using Moq;
+using SpreadsheetCalculator.ExpressionEngine.Parsing;
+using SpreadsheetCalculator.ExpressionEngine.Tokenization;
 using SpreadsheetCalculator.Spreadsheet;
-using SpreadsheetCalculator.Spreadsheet.CellParsing;
 using Xunit;
 
 namespace SpreadsheetCalculator.Tests.Spreadsheet
@@ -11,14 +12,11 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         private readonly MathSpreadsheet _spreadsheet;
 
         public SpreadsheetTests()
-        {
-            var cellExpression = new Mock<ICellExpression>();
-            cellExpression.Setup(foo => foo.IsValid).Returns(true);
-
-            var cellParser = new Mock<ICellParser>();
-            cellParser.Setup(foo => foo.Parse(It.IsAny<string>())).Returns(cellExpression.Object);
-
-            _spreadsheet = new MathSpreadsheet(cellParser.Object);
+        {            
+            var parser = new Mock<Parser>();
+            var tokenizer = new Mock<Tokenizer>();
+            
+            _spreadsheet = new MathSpreadsheet(parser.Object, tokenizer.Object);            
         }
 
         [Theory]
@@ -35,8 +33,9 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
 
         [Fact]
         public void SpreadsheetConstructor_ArgumentsIsNullMissed_ThrowNullArgumentException()
-        {
-            Assert.Throws<ArgumentNullException>(() => new MathSpreadsheet(null));
+        {            
+            Assert.Throws<ArgumentNullException>(() => new MathSpreadsheet(null, new Mock<ITokenizer>().Object));
+            Assert.Throws<ArgumentNullException>(() => new MathSpreadsheet(new Mock<IParser>().Object, null));
         }
 
         [Fact]
@@ -80,11 +79,11 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         {
             _spreadsheet.SetSize(1, 1);
 
-            const string cellValue = "dummy";
+            const string cellValue = "1";
 
             _spreadsheet.SetValue(1, 1, cellValue);
 
-            Assert.Equal("#PENDING!", _spreadsheet.GetValue(1, 1));
+            Assert.Equal("1", _spreadsheet.GetValue(1, 1));
         }
 
         [Fact]
@@ -93,7 +92,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
             const int columnNumber = 2;
             const int rowNumber = 3;
 
-            string CellCoordinatesToString(int i, int j) => $"row: {i} column: {j}";
+            string CellCoordinatesToString(int i, int j) => $"{i} + {j}";
 
             _spreadsheet.SetSize(rowNumber, columnNumber);
 
@@ -109,7 +108,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
             {
                 for (var j = 1; j <= columnNumber; j++)
                 {
-                    Assert.Equal("#PENDING!", _spreadsheet.GetValue(i, j));
+                    Assert.Equal(CellCoordinatesToString(i, j), _spreadsheet.GetValue(i, j));
                 }
             }
         }

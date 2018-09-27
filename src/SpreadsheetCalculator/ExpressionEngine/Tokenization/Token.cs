@@ -1,4 +1,4 @@
-﻿namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis
+﻿namespace SpreadsheetCalculator.ExpressionEngine.Tokenization
 {
     internal struct Token
     {

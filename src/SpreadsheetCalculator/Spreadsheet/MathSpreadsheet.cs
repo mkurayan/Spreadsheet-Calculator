@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using SpreadsheetCalculator.DirectedGraph;
-using SpreadsheetCalculator.Spreadsheet.CellParsing;
+using SpreadsheetCalculator.ExpressionEngine.Parsing;
+using SpreadsheetCalculator.ExpressionEngine.Tokenization;
 
 namespace SpreadsheetCalculator.Spreadsheet
 {
@@ -21,8 +21,9 @@ namespace SpreadsheetCalculator.Spreadsheet
         // Store spreadsheet Cells.
         private Matrix<Cell> Matrix { get; set; }
 
-        // Parse cell text.
-        private ICellParser Parser { get; }
+        private readonly IParser _parser;
+        
+        private readonly ITokenizer _tokenizer;
 
         /// <summary>
         /// Rows count in spreadsheet.
@@ -38,9 +39,11 @@ namespace SpreadsheetCalculator.Spreadsheet
         /// Created new spreadsheet 
         /// </summary>
         /// <param name="parser"></param>
-        public MathSpreadsheet(ICellParser parser)
+        /// <param name="tokenizer"></param>
+        public MathSpreadsheet(IParser parser, ITokenizer tokenizer)
         {
-            Parser = parser ?? throw new ArgumentNullException(nameof(parser));
+            _parser = parser ?? throw new ArgumentNullException(nameof(parser));
+            _tokenizer = tokenizer ?? throw new ArgumentNullException(nameof(tokenizer));
         }
 
         /// <summary>
@@ -81,14 +84,14 @@ namespace SpreadsheetCalculator.Spreadsheet
                 throw new IndexOutOfRangeException("Requested cell is out of spreadsheet.");
             }
             
-            var parsedExpression = Parser.Parse(value);
+            var cell = new Cell(_parser, _tokenizer, value);
 
-            if (!parsedExpression.IsValid)
+            if (cell.CellState == CellState.SyntaxError)
             {
                 Console.WriteLine($"Invalid expression {new CellPosition(column, row)}: {value}");
             }
 
-            Matrix[column, row] = new Cell(parsedExpression);
+            Matrix[column, row] = cell;
         }
 
         /// <summary>

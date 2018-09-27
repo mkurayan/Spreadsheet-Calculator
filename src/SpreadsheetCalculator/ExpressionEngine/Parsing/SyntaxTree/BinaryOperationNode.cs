@@ -1,6 +1,6 @@
 using System;
 
-namespace SpreadsheetCalculator.ExpressionEngine.SyntaxTree
+namespace SpreadsheetCalculator.ExpressionEngine.Parsing.SyntaxTree
 {
     public class BinaryOperationNode : INode
     {

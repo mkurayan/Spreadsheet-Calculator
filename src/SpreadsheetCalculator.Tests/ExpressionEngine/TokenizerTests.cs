@@ -1,18 +1,17 @@
 ﻿using System.Linq;
 using SpreadsheetCalculator.ExpressionEngine;
-using SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis;
-using SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis.InfixNotation;
+using SpreadsheetCalculator.ExpressionEngine.Tokenization;
 using Xunit;
 
 namespace SpreadsheetCalculator.Tests.ExpressionEngine
 {
-    public class InfixNotationTokenizerTests
+    public class TokenizerTests
     {
         private ITokenizer Tokenizer { get; }
 
-        public InfixNotationTokenizerTests()
+        public TokenizerTests()
         {
-            Tokenizer = new InfixExpressionFactory().CreateTokenizer();
+            Tokenizer = new Tokenizer();
         }
 
         [Theory]

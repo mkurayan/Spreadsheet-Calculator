@@ -1,4 +1,4 @@
-﻿namespace SpreadsheetCalculator.ExpressionEngine.SyntaxTree
+﻿namespace SpreadsheetCalculator.ExpressionEngine.Parsing
 {
     public interface IDependencyResolver
     {

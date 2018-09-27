@@ -1,9 +1,10 @@
-﻿using SpreadsheetCalculator.ExpressionEngine.SyntaxTree;
-using System;
+﻿using System;
+using SpreadsheetCalculator.ExpressionEngine.Parsing.SyntaxTree;
+using SpreadsheetCalculator.ExpressionEngine.Tokenization;
 
-namespace SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis.InfixNotation
+namespace SpreadsheetCalculator.ExpressionEngine.Parsing
 {
-    internal class InfixNotationParser : IParser
+    internal class Parser : IParser
     {
         private TokensSequence _tokensSequence;
         

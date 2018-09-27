@@ -1,8 +1,8 @@
-﻿using SpreadsheetCalculator.ExpressionEngine.SyntaxAnalysis.InfixNotation;
+﻿using System;
+using SpreadsheetCalculator.ExpressionEngine.Parsing;
+using SpreadsheetCalculator.ExpressionEngine.Tokenization;
 using SpreadsheetCalculator.IO;
 using SpreadsheetCalculator.Spreadsheet;
-using SpreadsheetCalculator.Spreadsheet.CellParsing;
-using System;
 using SpreadsheetCalculator.IO.Console;
 using SpreadsheetCalculator.IO.File;
 
@@ -15,7 +15,7 @@ namespace SpreadsheetCalculator
             var inputFile = args.Length > 0 ? args[0] :null;
             var outputFile = args.Length > 1 ? args[1] : null;
 
-            var spreadsheet = new MathSpreadsheet(new CellParser(new InfixExpressionFactory()));
+            var spreadsheet = new MathSpreadsheet(new Parser(), new Tokenizer());
 
             var reader = GetTextReader(inputFile);
 

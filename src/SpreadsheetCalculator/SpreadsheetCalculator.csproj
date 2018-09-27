@@ -21,9 +21,4 @@
     </Reference>
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="ExpressionEngine\SyntaxAnalysis\PrefixNotation\" />
-    <Folder Include="ExpressionEngine\SyntaxAnalysis\PostfixNotation\" />
-  </ItemGroup>
-
 </Project>

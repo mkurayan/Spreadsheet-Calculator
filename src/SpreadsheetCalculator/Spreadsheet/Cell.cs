@@ -1,9 +1,11 @@
-﻿using SpreadsheetCalculator.ExpressionEngine.SyntaxTree;
-using SpreadsheetCalculator.Spreadsheet.CellParsing;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using SpreadsheetCalculator.ExpressionEngine;
+using SpreadsheetCalculator.ExpressionEngine.Parsing;
+using SpreadsheetCalculator.ExpressionEngine.Parsing.SyntaxTree;
+using SpreadsheetCalculator.ExpressionEngine.Tokenization;
 
 namespace SpreadsheetCalculator.Spreadsheet
 {
@@ -16,19 +18,48 @@ namespace SpreadsheetCalculator.Spreadsheet
 
         public CellState CellState { get; private set; }
 
-        public IEnumerable<string> CellDependencies => _expression.CellReferences;
+        public IReadOnlyCollection<string> CellDependencies { get; }
 
-        private readonly ICellExpression _expression;
+        private readonly INode _syntaxTree;
+
+        private readonly bool _isEmpty;
+
+        private readonly string _value;
 
         /// <summary>
         /// Create new SpreadsheetCell.
         /// </summary>
-        /// <param name="expression">Parsed math expression.</param>
-        public Cell(ICellExpression expression)
+        /// <param name="parser">Parser, parse tokens to syntax tree.</param>
+        /// <param name="tokenizer">Tokenizer, split string to tokens.</param>
+        /// <param name="value">Math expression.</param>
+        public Cell(IParser parser, ITokenizer tokenizer, string value)
         {
-            _expression = expression;
+            _value = value;
 
-            CellState = expression.IsValid ? CellState.Pending : CellState.SyntaxError;
+            CellState = CellState.Pending;
+
+            try
+            {
+                var tokens = tokenizer.Tokenize(value);
+
+                _isEmpty = tokens.Length == 0;
+
+                CellDependencies = tokens
+                    .Where(token => token.Type == TokenType.CellReference)
+                    .Select(token => token.Value)
+                    .ToHashSet();
+                
+                _syntaxTree = parser.Parse(tokens);
+            }
+            catch (SyntaxException)
+            {
+                CellState = CellState.SyntaxError;
+
+                // Empty..
+                CellDependencies = new string[0];
+
+                _syntaxTree = null;
+            }
         }
 
         /// <summary>
@@ -37,8 +68,14 @@ namespace SpreadsheetCalculator.Spreadsheet
         /// <param name="cellDependencies">Dictionary with all cell dependencies (references to another cells)</param>
         public void Calculate(Dictionary<string, ICell> cellDependencies)
         {
-            if (_expression.IsValid)
+            if (CellState == CellState.Pending)
             {
+                if (_isEmpty)
+                {
+                    SetValue(0);
+                    return;
+                }
+            
                 if (cellDependencies.Any(c => c.Value == null))
                 {
                     SetError();
@@ -56,9 +93,7 @@ namespace SpreadsheetCalculator.Spreadsheet
                     return;
                 }
 
-                var value = _expression.Calculate(new DependencyResolver(cellDependencies));
-
-                SetValue(value);
+                SetValue(_syntaxTree.Evaluate(new DependencyResolver(cellDependencies)));
             }
 
             void SetError()
@@ -83,7 +118,8 @@ namespace SpreadsheetCalculator.Spreadsheet
             switch (CellState)
             {
                 case CellState.Pending:
-                    return "#PENDING!";
+                    // In Pending state when cell not calculated yet, we return original cell value.
+                    return _value;
                 case CellState.Calculated:
                     if (CellValue.HasValue)
                     {
