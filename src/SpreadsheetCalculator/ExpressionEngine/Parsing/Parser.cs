@@ -1,19 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
 using SpreadsheetCalculator.ExpressionEngine.Parsing.SyntaxTree;
 using SpreadsheetCalculator.ExpressionEngine.Tokenization;
 
 namespace SpreadsheetCalculator.ExpressionEngine.Parsing
 {
+    /// <summary>
+    /// Use Top-down parsing strategy in order to parse a sequence of tokens.
+    /// </summary>
     internal class Parser : IParser
     {
         private TokensSequence _tokensSequence;
         
-        public INode Parse(Token[] tokens)
-        {
-            // Empty expression, nothing to parse.
-            if (tokens.Length == 0)
+        public INode Parse(IReadOnlyList<Token> tokens)
+        {            
+            if (tokens.Count == 0)
             {
-                return null;
+                // We resolve empty expression, as zero.
+                return new NumberNode(0);
             }
                         
             _tokensSequence = new TokensSequence(tokens);
@@ -158,14 +162,15 @@ namespace SpreadsheetCalculator.ExpressionEngine.Parsing
         
         private class TokensSequence
         {
-            private readonly Token[] _tokens;
+            private readonly IReadOnlyList<Token> _tokens;
+            
             private int _index;
 
             private readonly Token _endOfExpression = new Token(TokenType.EndOfExpression, string.Empty);
 
             public Token Current { get; private set; }
 
-            public TokensSequence(Token[] tokens)
+            public TokensSequence(IReadOnlyList<Token> tokens)
             {
                 _tokens = tokens;
                 _index = -1;
@@ -175,7 +180,7 @@ namespace SpreadsheetCalculator.ExpressionEngine.Parsing
 
             public void MoveNext()
             {
-                if (_index < _tokens.Length - 1)
+                if (_index < _tokens.Count - 1)
                 {
                     _index++;
 

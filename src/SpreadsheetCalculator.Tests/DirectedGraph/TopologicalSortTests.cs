@@ -20,10 +20,7 @@ namespace SpreadsheetCalculator.Tests.DirectedGraph
 
             public override bool Equals(object obj)
             {
-                if (!(obj is Node))
-                    return false;
-
-                return Equals((Node)obj);
+                return obj is Node node && Equals(node);
             }
 
             public bool Equals(Node other)

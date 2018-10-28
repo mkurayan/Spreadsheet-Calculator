@@ -14,7 +14,7 @@ namespace SpreadsheetCalculator.Spreadsheet
         }
 
         /// <summary>
-        /// Initializes a new instance of the System.Exception class with a specified error
+        /// Initializes a new instance of the SpreadsheetInternalException class with a specified error
         /// message and a reference to the inner exception that is the cause of this exception.
         /// </summary>
         /// <param name="message">The message that describes the error.</param>

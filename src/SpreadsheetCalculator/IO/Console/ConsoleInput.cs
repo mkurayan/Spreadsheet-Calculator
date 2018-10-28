@@ -1,4 +1,6 @@
-﻿using SpreadsheetCalculator.Spreadsheet;
+﻿using SpreadsheetCalculator.ExpressionEngine.Parsing;
+using SpreadsheetCalculator.ExpressionEngine.Tokenization;
+using SpreadsheetCalculator.Spreadsheet;
 
 namespace SpreadsheetCalculator.IO.Console
 {
@@ -7,9 +9,9 @@ namespace SpreadsheetCalculator.IO.Console
         private const int ColumnsThreshold = 10;
         private const int RowsThreshold = 99;
 
-        public void Read(IEditSpreadsheet spreadsheet)
+        public IMathSpreadsheet Read()
         {
-            var textSpreadsheet = new TextSpreadsheet();
+            var spreadsheet = new MathSpreadsheet(new Parser(), new Tokenizer());
 
             System.Console.WriteLine("Please provide spreadsheet size.");
 
@@ -32,7 +34,6 @@ namespace SpreadsheetCalculator.IO.Console
                 System.Console.WriteLine($"Spreadsheet size exceed {ColumnsThreshold} x {RowsThreshold} interactive output will be hidden because spreadsheet will not feet in console.");
             }
 
-            textSpreadsheet.SetSize(columnsCount, rowsCount);
             spreadsheet.SetSize(columnsCount, rowsCount);
 
             System.Console.WriteLine(string.Empty);
@@ -46,57 +47,34 @@ namespace SpreadsheetCalculator.IO.Console
                 {
                     if (showInteractiveInput)
                     {
-                        CleanConsole();
+                        CleanConsole(left, top);
 
-                        System.Console.WriteLine(Print.PrintSpreadsheet(textSpreadsheet));
+                        System.Console.WriteLine(Print.PrintSpreadsheet(spreadsheet, true));
                     }
                     
                     System.Console.Write($"Please enter { new CellPosition(columnNumber, rowNumber) }: ");
                     var cellValue = System.Console.ReadLine();
 
                     spreadsheet.SetValue(columnNumber, rowNumber, cellValue);
-                    textSpreadsheet.SetValue(columnNumber, rowNumber, cellValue);
                 }
             }
 
             if (showInteractiveInput)
             {
-                CleanConsole();
-                System.Console.WriteLine(Print.PrintSpreadsheet(textSpreadsheet));
+                CleanConsole(left, top);
+                System.Console.WriteLine(Print.PrintSpreadsheet(spreadsheet, true));
             }
 
-            void CleanConsole()
-            {
-                var linesToClear = System.Console.CursorTop - top;
-
-                System.Console.SetCursorPosition(left, top);
-                System.Console.Write(new string(' ', System.Console.WindowWidth * linesToClear));
-                System.Console.SetCursorPosition(left, top);
-            }
+            return spreadsheet;
         }
 
-        private class TextSpreadsheet : IViewSpreadsheet, IEditSpreadsheet
+        private static void CleanConsole(int left, int top)
         {
-            private Matrix<string> _matrix;
+            var linesToClear = System.Console.CursorTop - top;
 
-            public int ColumnsCount => _matrix.ColumnsCount;
-
-            public int RowsCount => _matrix.RowsCount;
-
-            public string GetValue(int column, int row)
-            {
-                return _matrix[column, row] ?? string.Empty;
-            }
-
-            public void SetSize(int columnsCount, int rowsCount)
-            {
-                _matrix = new Matrix<string>(columnsCount, rowsCount);
-            }
-
-            public void SetValue(int column, int row, string value)
-            {
-                _matrix[column, row] = value;
-            }
+            System.Console.SetCursorPosition(left, top);
+            System.Console.Write(new string(' ', System.Console.WindowWidth * linesToClear));
+            System.Console.SetCursorPosition(left, top);
         }
     }
 }

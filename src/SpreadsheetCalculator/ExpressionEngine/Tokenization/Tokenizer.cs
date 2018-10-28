@@ -3,9 +3,6 @@ using System.Collections.Generic;
 
 namespace SpreadsheetCalculator.ExpressionEngine.Tokenization
 {   
-    /// <summary>
-    /// Split string to tokens.
-    /// </summary>
     internal class Tokenizer : ITokenizer
     {
         private static readonly Dictionary<char, TokenType> SymbolsMap = new Dictionary<char, TokenType> 

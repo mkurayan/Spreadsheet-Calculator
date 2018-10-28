@@ -17,6 +17,6 @@
         /// </summary>
         /// <param name="column">Column index in spreadsheet.</param>
         /// <param name="row">Row index in spreadsheet.</param>
-        string GetValue(int column, int row);
+        IViewCell GetValue(int column, int row);
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using SpreadsheetCalculator.ExpressionEngine.Parsing;
+using SpreadsheetCalculator.ExpressionEngine.Tokenization;
 using SpreadsheetCalculator.Spreadsheet;
 
 namespace SpreadsheetCalculator.IO.File
@@ -14,8 +16,10 @@ namespace SpreadsheetCalculator.IO.File
             File = file ?? throw new ArgumentNullException(nameof(file));
         }
 
-        public void Read(IEditSpreadsheet spreadsheet)
+        public IMathSpreadsheet Read()
         {
+            var spreadsheet = new MathSpreadsheet(new Parser(), new Tokenizer());
+
             System.Console.WriteLine("Load spreadsheet from file.");
 
             using (var sIn = new StreamReader(new FileStream(File, FileMode.Open)))
@@ -26,14 +30,16 @@ namespace SpreadsheetCalculator.IO.File
 
                 for (var rowNumber = 1; rowNumber <= rowsCount; rowNumber++)
                 {
-                    for (var columnNumber = 0; columnNumber <= columnsCount; columnNumber++)
+                    for (var columnNumber = 1; columnNumber <= columnsCount; columnNumber++)
                     {
                         var cellValue = sIn.ReadLine();
 
-                        spreadsheet.SetValue(rowNumber, columnNumber, cellValue);
+                        spreadsheet.SetValue(columnNumber, rowNumber, cellValue);
                     }
                 }
             }
+
+            return spreadsheet;
         }
 
         private static (int columnsCount, int rowsCount) ParseHeader(string header)

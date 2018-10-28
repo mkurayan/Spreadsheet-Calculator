@@ -9,14 +9,14 @@ namespace SpreadsheetCalculator.IO
 {
     internal static class Print
     {
-        public static string PrintSpreadsheet(IViewSpreadsheet spreadsheet)
+        public static string PrintSpreadsheet(IViewSpreadsheet spreadsheet, bool original = false)
         {
-            var view = new VirtualSpreadsheet(spreadsheet);
+            var view = new VirtualSpreadsheet(spreadsheet, original);
 
             return PrintContent(view);
         }
 
-        private static string PrintContent(IViewSpreadsheet spreadsheet)
+        private static string PrintContent(VirtualSpreadsheet spreadsheet)
         {
             var columnsLength =
               Enumerable.Range(1, spreadsheet.ColumnsCount)
@@ -48,32 +48,35 @@ namespace SpreadsheetCalculator.IO
             return builder.ToString();
         }
 
-        private static IEnumerable<string> GetRow(IViewSpreadsheet spreadsheet, int rowIndex)
+        private static IEnumerable<string> GetRow(VirtualSpreadsheet spreadsheet, int rowIndex)
         {
             return Enumerable
                 .Range(1, spreadsheet.ColumnsCount)
                 .Select(columnIndex => spreadsheet.GetValue(columnIndex, rowIndex));
-
         }
 
-        private static IEnumerable<string> GetColumn(IViewSpreadsheet spreadsheet, int columnIndex)
+        private static IEnumerable<string> GetColumn(VirtualSpreadsheet spreadsheet, int columnIndex)
         {
             return Enumerable
                 .Range(1, spreadsheet.RowsCount)
                 .Select(rowIndex => spreadsheet.GetValue(columnIndex, rowIndex));
         }
 
-        private class VirtualSpreadsheet : IViewSpreadsheet
+        private class VirtualSpreadsheet
         {
+            private readonly bool _original;
+
             private IViewSpreadsheet View { get; }
 
             public int ColumnsCount => View.ColumnsCount + 1;
 
             public int RowsCount => View.RowsCount + 1;
 
-            public VirtualSpreadsheet(IViewSpreadsheet view)
+            public VirtualSpreadsheet(IViewSpreadsheet view, bool original)
             {
                 View = view;
+
+                _original = original;
             }
 
             public string GetValue(int column, int row)
@@ -93,7 +96,9 @@ namespace SpreadsheetCalculator.IO
                     return (row - 1).ToString();
                 }
 
-                return View.GetValue(column - 1, row - 1);
+                var value = View.GetValue(column - 1, row - 1);
+
+                return _original ? value.OriginalValue : value.ResultValue;
             }
         }
     }

@@ -7,6 +7,6 @@ namespace SpreadsheetCalculator.IO
     /// </summary>
     internal interface IInputStreamReader
     {
-        void Read(IEditSpreadsheet spreadsheet);
+        IMathSpreadsheet Read();
     }
 }

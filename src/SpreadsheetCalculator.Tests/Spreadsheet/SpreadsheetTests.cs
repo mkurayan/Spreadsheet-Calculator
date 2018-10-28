@@ -83,7 +83,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
 
             _spreadsheet.SetValue(1, 1, cellValue);
 
-            Assert.Equal("1", _spreadsheet.GetValue(1, 1));
+            Assert.Equal("1", _spreadsheet.GetValue(1, 1).OriginalValue);
         }
 
         [Fact]
@@ -108,7 +108,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
             {
                 for (var j = 1; j <= columnNumber; j++)
                 {
-                    Assert.Equal(CellCoordinatesToString(i, j), _spreadsheet.GetValue(i, j));
+                    Assert.Equal(CellCoordinatesToString(i, j), _spreadsheet.GetValue(i, j).OriginalValue);
                 }
             }
         }

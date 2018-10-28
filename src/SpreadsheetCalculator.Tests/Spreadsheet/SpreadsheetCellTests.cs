@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Globalization;
 using Moq;
-using SpreadsheetCalculator.ExpressionEngine;
-using SpreadsheetCalculator.ExpressionEngine.Parsing;
+using SpreadsheetCalculator.ExpressionEngine.Parsing.SyntaxTree;
 using SpreadsheetCalculator.ExpressionEngine.Tokenization;
 using SpreadsheetCalculator.Spreadsheet;
 using Xunit;
@@ -10,33 +10,49 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
 {
     public class SpreadsheetCellTests
     {
-        Mock<IParser> _parser;
-        Mock<ITokenizer> _tokenizer;
+        private readonly Mock<INode> _treeTop;
 
         public SpreadsheetCellTests()
         {
-            _parser = new Mock<IParser>();
-            _tokenizer = new Mock<ITokenizer>();
+            _treeTop = new Mock<INode>();
         }
 
         [Fact]
-        public void CreateNewSpreadsheetCell_ValidExpression_CellCreatedInPendingState()
+        public void CreateCell_CellTextIsNull_ThrowArgumentNullException()
         {
-            var cell = new Cell(_parser.Object, _tokenizer.Object, string.Empty);
+            Assert.Throws<ArgumentNullException>(() => new Cell(null, new Token[0], _treeTop.Object));
+        }
+
+        [Fact]
+        public void CreateCell_TokensIsNull_ThrowArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => new Cell(string.Empty, null, _treeTop.Object));
+        }
+
+        [Fact]
+        public void CreateCell_SyntaxTreeIsNull_ThrowArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => new Cell(string.Empty, new Token[0], null));
+        }
+
+        [Fact]
+        public void CreateCell_ValidExpression_CellCreatedInPendingState()
+        {
+            var cell = new Cell(string.Empty, new Token[0], _treeTop.Object);
 
             Assert.Equal(CellState.Pending, cell.CellState);
 
-            Assert.Equal(string.Empty, cell.ToString());
+            Assert.Equal(string.Empty, cell.OriginalValue);
 
-            Assert.False(cell.CellValue.HasValue);
+            Assert.Equal("#PENDING!", cell.ResultValue);
+
+            Assert.False(cell.CalculatedValue.HasValue);
         }
 
         [Fact]
         public void CreateCell_EmptyExpression_NoCellReferences()
         {
-            _tokenizer.Setup(foo => foo.Tokenize(It.IsAny<string>())).Returns(new Token[0]);
-
-            var cell = new Cell(_parser.Object, _tokenizer.Object, string.Empty);
+            var cell = new Cell(string.Empty, new Token[0], _treeTop.Object);
 
             Assert.Equal(0, cell.CellDependencies.Count);
         }
@@ -44,16 +60,16 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         [Fact]
         public void CreateCell_MultipleReferenceToCell_CorrectDependenciesCount()
         {
-            _tokenizer.Setup(foo => foo.Tokenize(It.IsAny<string>())).Returns(new[] {
+            Token[] tokens = {
                 new Token(TokenType.CellReference, "A1"),
                 new Token(TokenType.CellReference, "A1"),
                 new Token(TokenType.CellReference, "A1"),
                 new Token(TokenType.CellReference, "A2"),
                 new Token(TokenType.CellReference, "A2"),
                 new Token(TokenType.CellReference, "A3")
-            });
+            };
 
-            var cell = new Cell(_parser.Object, _tokenizer.Object, string.Empty);
+            var cell = new Cell(string.Empty, tokens, _treeTop.Object);
 
             Assert.Equal(3, cell.CellDependencies.Count);
         }
@@ -61,7 +77,7 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
         [Fact]
         public void CreateCell_WithoutCellReferences_NoCellReferences()
         {
-            _tokenizer.Setup(foo => foo.Tokenize(It.IsAny<string>())).Returns(new[] {
+            Token[] tokens = {
                 new Token(TokenType.Number, ""),
                 new Token(TokenType.Add, ""),
                 new Token(TokenType.Subtract, ""),
@@ -70,120 +86,82 @@ namespace SpreadsheetCalculator.Tests.Spreadsheet
                 new Token(TokenType.OpenParenthesis, ""),
                 new Token(TokenType.CloseParenthesis, ""),
                 new Token(TokenType.EndOfExpression, "")
-            });
+            };
 
-            var cell = new Cell(_parser.Object, _tokenizer.Object, string.Empty);
+            var cell = new Cell(string.Empty, tokens, _treeTop.Object);
 
             Assert.Equal(0, cell.CellDependencies.Count);
         }
 
         [Fact]
-        public void CreateCell_TokenizerThrowSyntaxException_CellCreatedInSyntaxErrorState()
+        public void CreateCell_SyntaxException_CellCreatedInSyntaxErrorState()
         {
-            _tokenizer.Setup(foo => foo.Tokenize(It.IsAny<string>())).Throws(new SyntaxException("Dummy"));
+            const string expressionWithError = "Expression with syntax error";
 
-            var cell = new Cell(_parser.Object, _tokenizer.Object, string.Empty);
+            var cell = new Cell(expressionWithError);
 
             Assert.Equal(CellState.SyntaxError, cell.CellState);
 
-            Assert.Equal("#SYNTAX!", cell.ToString());
+            Assert.Equal(expressionWithError, cell.OriginalValue);
 
-            Assert.False(cell.CellValue.HasValue);
-        }
+            Assert.Equal("#SYNTAX!", cell.ResultValue);
 
-        [Fact]
-        public void CreateCell_ParserThrowSyntaxException_CellCreatedInSyntaxErrorState()
-        {
-            _parser.Setup(foo => foo.Parse(It.IsAny<Token[]>())).Throws(new SyntaxException("Dummy"));
-
-            var cell = new Cell(_parser.Object, _tokenizer.Object, string.Empty);
-
-            Assert.Equal(CellState.SyntaxError, cell.CellState);
-
-            Assert.Equal("#SYNTAX!", cell.ToString());
-
-            Assert.False(cell.CellValue.HasValue);
+            Assert.False(cell.CalculatedValue.HasValue);
         }
         
 
         [Fact]
-        public void Calculate_InvalidExpression_CellRemainsInErrorState()
+        public void PendingCell_SetValue_CellGoesToCalculatedState()
         {
-            _parser.Setup(foo => foo.Parse(It.IsAny<Token[]>())).Throws(new SyntaxException("Dummy"));
+            var cell = new Cell(string.Empty, new Token[0], _treeTop.Object);
 
-            var cell = new Cell(_parser.Object, _tokenizer.Object, string.Empty);
+            const double expectedValue = 5.5;
 
-            Assert.Equal(CellState.SyntaxError, cell.CellState);
-
-            cell.Calculate(null);
-
-            Assert.Equal(CellState.SyntaxError, cell.CellState);
-
-            Assert.False(cell.CellValue.HasValue);
-
-            Assert.Equal("#SYNTAX!", cell.ToString());
-        }
-
-        [Fact]
-        public void Calculate_EmptyExpression_CellValueSetToZero()
-        {
-            _tokenizer.Setup(foo => foo.Tokenize(It.IsAny<string>())).Returns(new Token[0]);
-
-            var cell = new Cell(_parser.Object, _tokenizer.Object, string.Empty);
-
-            cell.Calculate(new Dictionary<string, ICell>());
+            cell.SetValue(expectedValue);
 
             Assert.Equal(CellState.Calculated, cell.CellState);
 
-            Assert.Equal(0, cell.CellValue.Value);
+            Assert.Equal(expectedValue.ToString(CultureInfo.InvariantCulture), cell.ResultValue);
 
-            Assert.Equal("0", cell.ToString());
+            Assert.True(cell.CalculatedValue.HasValue);
+
+            Assert.Equal(expectedValue, cell.CalculatedValue.Value);
         }
 
         [Fact]
-        public void Calculate_CellReferenceMissed_CellInErrorState()
+        public void CellWithSyntaxError_SetValue_InvalidOperationExceptionThrown()
         {
-            _tokenizer.Setup(foo => foo.Tokenize(It.IsAny<string>())).Returns(new[] {
-                new Token(TokenType.CellReference, "A1"),
-                new Token(TokenType.Add, "+"),
-                new Token(TokenType.Number, "1")
-            });
+            var cell = new Cell("Cell with syntax error");
 
-            var cell = new Cell(_parser.Object, _tokenizer.Object, string.Empty);
-
-            cell.Calculate(new Dictionary<string, ICell> { ["A1"] = null });
-
-            Assert.Equal(CellState.CellValueError, cell.CellState);
-
-            Assert.False(cell.CellValue.HasValue);
-
-            Assert.Equal("#VALUE!", cell.ToString());
+            Assert.Throws<InvalidOperationException>(() => cell.SetValue(0));
         }
 
         [Theory]
-        [InlineData(CellState.SyntaxError)]
         [InlineData(CellState.CellValueError)]
-        public void Calculate_CellReferenceHasErrorState_CellInErrorState(CellState errorState)
+        [InlineData(CellState.SyntaxError)]
+        [InlineData(CellState.Pending)]
+        [InlineData(CellState.Calculated)]
+        public void CellWithSyntaxError_SetError_InvalidOperationExceptionThrown(CellState errorState)
         {
-            _tokenizer.Setup(foo => foo.Tokenize(It.IsAny<string>())).Returns(new[] {
-                new Token(TokenType.CellReference, "A1"),
-                new Token(TokenType.Add, "+"),
-                new Token(TokenType.Number, "1")
-            });
-            
-            var cellWithError = new Mock<ICell>();
-            cellWithError.Setup(foo => foo.CellState).Returns(errorState);
+            var cell = new Cell("Cell with syntax error");
 
-            var cell = new Cell(_parser.Object, _tokenizer.Object, string.Empty);
+            Assert.Throws<InvalidOperationException>(() => cell.SetError(errorState));
+        }
 
-            cell.Calculate(new Dictionary<string, ICell> { ["A1"] = cellWithError.Object });
+        [Theory]
+        [InlineData(CellState.CellValueError, "#VALUE!")]
+        [InlineData(CellState.SyntaxError, "#SYNTAX!")]
+        public void PendingCell_SetValueError_CellGoesToErrorState(CellState errorState, string expectedResult)
+        {
+            var cell = new Cell(string.Empty, new Token[0], _treeTop.Object);
 
+            cell.SetError(errorState);
 
-            Assert.Equal(CellState.CellValueError, cell.CellState);
+            Assert.Equal(errorState, cell.CellState);
 
-            Assert.False(cell.CellValue.HasValue);
+            Assert.Equal(expectedResult, cell.ResultValue);
 
-            Assert.Equal("#VALUE!", cell.ToString());
+            Assert.False(cell.CalculatedValue.HasValue);
         }
     }
 }

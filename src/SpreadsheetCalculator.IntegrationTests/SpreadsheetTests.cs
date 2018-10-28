@@ -33,9 +33,9 @@ namespace SpreadsheetCalculator.IntegrationTests
             {
                 for (var col = 1; col <= _spreadsheet.ColumnsCount; col++)
                 {
-                    var result = int.Parse(_spreadsheet.GetValue(col, row));
+                    var cell = _spreadsheet.GetValue(col, row);
 
-                    Assert.Equal(col + row, result);
+                    Assert.Equal(col + row, int.Parse(cell.ResultValue));
                 }
             }
         }
@@ -69,7 +69,7 @@ namespace SpreadsheetCalculator.IntegrationTests
                 {
                     expected++;
 
-                    Assert.Equal(expected.ToString(), _spreadsheet.GetValue(col, row));
+                    Assert.Equal(expected.ToString(), _spreadsheet.GetValue(col, row).ResultValue);
                 }
             }
         }
@@ -103,12 +103,12 @@ namespace SpreadsheetCalculator.IntegrationTests
 
             _spreadsheet.Calculate();
 
-            Assert.Equal("6", _spreadsheet.GetValue("A1"));
-            Assert.Equal("6", _spreadsheet.GetValue("B1"));
-            Assert.Equal("6", _spreadsheet.GetValue("C1"));
-            Assert.Equal("4", _spreadsheet.GetValue("A2"));
-            Assert.Equal("3", _spreadsheet.GetValue("B2"));
-            Assert.Equal("7.5", _spreadsheet.GetValue("C2"));
+            Assert.Equal("6", _spreadsheet.GetValue("A1").ResultValue);
+            Assert.Equal("6", _spreadsheet.GetValue("B1").ResultValue);
+            Assert.Equal("6", _spreadsheet.GetValue("C1").ResultValue);
+            Assert.Equal("4", _spreadsheet.GetValue("A2").ResultValue);
+            Assert.Equal("3", _spreadsheet.GetValue("B2").ResultValue);
+            Assert.Equal("7.5", _spreadsheet.GetValue("C2").ResultValue);
         }
 
         [Fact]
@@ -151,12 +151,12 @@ namespace SpreadsheetCalculator.IntegrationTests
             _spreadsheet.Calculate();
 
 
-            Assert.Equal("#VALUE!", _spreadsheet.GetValue(1, 1));
-            Assert.Equal("1", _spreadsheet.GetValue(2, 1));
-            Assert.Equal("#VALUE!", _spreadsheet.GetValue(3, 1));
-            Assert.Equal("#VALUE!", _spreadsheet.GetValue(1, 2));
-            Assert.Equal("2", _spreadsheet.GetValue(2, 2));
-            Assert.Equal("#VALUE!", _spreadsheet.GetValue(3, 2));
+            Assert.Equal("#VALUE!", _spreadsheet.GetValue(1, 1).ResultValue);
+            Assert.Equal("1", _spreadsheet.GetValue(2, 1).ResultValue);
+            Assert.Equal("#VALUE!", _spreadsheet.GetValue(3, 1).ResultValue);
+            Assert.Equal("#VALUE!", _spreadsheet.GetValue(1, 2).ResultValue);
+            Assert.Equal("2", _spreadsheet.GetValue(2, 2).ResultValue);
+            Assert.Equal("#VALUE!", _spreadsheet.GetValue(3, 2).ResultValue);
         }
 
         [Fact]
@@ -176,9 +176,9 @@ namespace SpreadsheetCalculator.IntegrationTests
 
             _spreadsheet.Calculate();
 
-            Assert.Equal("0", _spreadsheet.GetValue(1, 1));
-            Assert.Equal("Infinity", _spreadsheet.GetValue(2, 1));
-            Assert.Equal("NaN", _spreadsheet.GetValue(3, 1));
+            Assert.Equal("0", _spreadsheet.GetValue(1, 1).ResultValue);
+            Assert.Equal("Infinity", _spreadsheet.GetValue(2, 1).ResultValue);
+            Assert.Equal("NaN", _spreadsheet.GetValue(3, 1).ResultValue);
         }
 
         [Fact]
@@ -202,12 +202,12 @@ namespace SpreadsheetCalculator.IntegrationTests
 
             _spreadsheet.Calculate();
 
-            Assert.Equal("#SYNTAX!", _spreadsheet.GetValue(1, 1));
-            Assert.Equal("#VALUE!", _spreadsheet.GetValue(2, 1));
-            Assert.Equal("#SYNTAX!", _spreadsheet.GetValue(3, 1));
-            Assert.Equal("#SYNTAX!", _spreadsheet.GetValue(1, 2));
-            Assert.Equal("#SYNTAX!", _spreadsheet.GetValue(2, 2));
-            Assert.Equal("#SYNTAX!", _spreadsheet.GetValue(3, 2));
+            Assert.Equal("#SYNTAX!", _spreadsheet.GetValue(1, 1).ResultValue);
+            Assert.Equal("#VALUE!", _spreadsheet.GetValue(2, 1).ResultValue);
+            Assert.Equal("#SYNTAX!", _spreadsheet.GetValue(3, 1).ResultValue);
+            Assert.Equal("#SYNTAX!", _spreadsheet.GetValue(1, 2).ResultValue);
+            Assert.Equal("#SYNTAX!", _spreadsheet.GetValue(2, 2).ResultValue);
+            Assert.Equal("#SYNTAX!", _spreadsheet.GetValue(3, 2).ResultValue);
         }
 
         [Fact]
@@ -226,8 +226,8 @@ namespace SpreadsheetCalculator.IntegrationTests
 
             _spreadsheet.Calculate();
 
-            Assert.Equal("0", _spreadsheet.GetValue(1, 1));
-            Assert.Equal("0", _spreadsheet.GetValue(2, 1));
+            Assert.Equal("0", _spreadsheet.GetValue(1, 1).ResultValue);
+            Assert.Equal("0", _spreadsheet.GetValue(2, 1).ResultValue);
         }
     }
 }

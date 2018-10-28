@@ -1,10 +1,6 @@
 ﻿using System;
-using SpreadsheetCalculator.ExpressionEngine.Parsing;
-using SpreadsheetCalculator.ExpressionEngine.Tokenization;
-using SpreadsheetCalculator.IO;
-using SpreadsheetCalculator.Spreadsheet;
-using SpreadsheetCalculator.IO.Console;
-using SpreadsheetCalculator.IO.File;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace SpreadsheetCalculator
 {
@@ -12,49 +8,38 @@ namespace SpreadsheetCalculator
     {
         private static void Main(string[] args)
         {
-            var inputFile = args.Length > 0 ? args[0] :null;
-            var outputFile = args.Length > 1 ? args[1] : null;
+            var inputFile = GetArgumentByIndex(args, 0);
+            var outputFile = GetArgumentByIndex(args, 1);
 
-            var spreadsheet = new MathSpreadsheet(new Parser(), new Tokenizer());
+            var executor = new SpreadsheetExecutor();
 
-            var reader = GetTextReader(inputFile);
-
-            try
+            // If input file provided, we read spreadsheet from it.
+            if (!string.IsNullOrEmpty(inputFile))
             {
-                reader.Read(spreadsheet);
-
-                Console.WriteLine("Calculating spreadsheet...");
-                Console.WriteLine(string.Empty);
-
-                spreadsheet.Calculate();
-            }
-            catch (Exception ex) when (ex is SpreadsheetFormatException || ex is SpreadsheetInternalException)
-            {
-                Console.WriteLine(ex.Message);
-                return;
+                executor.SetInputStreamToFile(inputFile);
             }
 
-            GetTextWriter(outputFile).Write(spreadsheet);
+            // If output file provided, we write spreadsheet into it.
+            if (!string.IsNullOrEmpty(outputFile))
+            {
+                executor.SetOutputStreamToFile(outputFile);
+            }
+
+            executor.Execute();
+
+#if DEBUG
+            // In debug mode do not close console window immediately once it finished.
+            if (Debugger.IsAttached)
+            {
+                Console.Write("Press any key to continue . . . ");
+                Console.ReadLine();
+            }
+#endif
         }
 
-        private static IInputStreamReader GetTextReader(string inputFile)
+        private static string GetArgumentByIndex(IReadOnlyList<string> args, int index)
         {
-            if (string.IsNullOrEmpty(inputFile))
-            {
-                return new ConsoleInput();
-            }
-
-            return new FileInput(inputFile);
-        }
-
-        private static IOutputStreamWriter GetTextWriter(string outputFile)
-        {
-            if (string.IsNullOrEmpty(outputFile))
-            {
-                return new ConsoleOutput();
-            }
-            
-            return new FileOutput(outputFile);
+            return args.Count > index ? args[index] : null;
         }
     }
 }
