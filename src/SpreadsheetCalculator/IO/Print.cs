@@ -98,6 +98,11 @@ namespace SpreadsheetCalculator.IO
 
                 var value = View.GetValue(column - 1, row - 1);
 
+                if (value == null)
+                {
+                    return string.Empty;
+                }
+               
                 return _original ? value.OriginalValue : value.ResultValue;
             }
         }

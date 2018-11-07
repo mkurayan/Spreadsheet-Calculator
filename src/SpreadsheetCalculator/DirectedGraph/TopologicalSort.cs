@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace SpreadsheetCalculator.DirectedGraph
 {
@@ -16,10 +17,10 @@ namespace SpreadsheetCalculator.DirectedGraph
         /// <param name="getDependencies">Get dependencies for each node.</param>
         /// <exception cref="CyclicDependencyException">Cyclic dependency found.</exception>
         /// <returns>Topologically sorted list.</returns>
-        public static IList<T> Sort<T>(IEnumerable<T> source, Func<T, IEnumerable<T>> getDependencies)
+        public static IList<string> Sort(IEnumerable<string> source, Func<string, IEnumerable<string>> getDependencies)
         {
-            var sorted = new List<T>();
-            var visited = new Dictionary<T, bool>();
+            var sorted = new List<string>();
+            var visited = new Dictionary<string, bool>();
 
             foreach (var item in source)
             {
@@ -29,7 +30,7 @@ namespace SpreadsheetCalculator.DirectedGraph
             return sorted;
         }
 
-        private static void Visit<T>(T item, Func<T, IEnumerable<T>> getDependencies, ICollection<T> sorted, IDictionary<T, bool> visited)
+        private static void Visit(string item, Func<string, IEnumerable<string>> getDependencies, ICollection<string> sorted, IDictionary<string, bool> visited)
         {
             var alreadyVisited = visited.TryGetValue(item, out var inProcess);
 
@@ -37,7 +38,18 @@ namespace SpreadsheetCalculator.DirectedGraph
             {
                 if (inProcess)
                 {
-                    throw new CyclicDependencyException("Cyclic dependency found.");
+                    var cellReffsTrackList = new List<string>();
+                    cellReffsTrackList.Add(item);
+
+                    var current = item;
+                    do
+                    {
+                        current = getDependencies(current).First(x => visited.ContainsKey(x) && visited[x]);
+                        cellReffsTrackList.Add(current);
+                    }
+                    while (current != item);                   
+
+                    throw new CyclicDependencyException("Cyclic dependency found: "+ string.Join("-> ", cellReffsTrackList.ToArray()));
                 }
             }
             else

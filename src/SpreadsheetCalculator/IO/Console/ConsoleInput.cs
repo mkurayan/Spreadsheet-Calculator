@@ -52,7 +52,7 @@ namespace SpreadsheetCalculator.IO.Console
                         System.Console.WriteLine(Print.PrintSpreadsheet(spreadsheet, true));
                     }
                     
-                    System.Console.Write($"Please enter { new CellPosition(columnNumber, rowNumber) }: ");
+                    System.Console.Write($"Please enter { CellPosition.CoordinatesToKey(columnNumber, rowNumber) }: ");
                     var cellValue = System.Console.ReadLine();
 
                     spreadsheet.SetValue(columnNumber, rowNumber, cellValue);

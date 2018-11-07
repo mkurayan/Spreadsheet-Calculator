@@ -5,6 +5,7 @@ using SpreadsheetCalculator.DirectedGraph;
 using SpreadsheetCalculator.ExpressionEngine;
 using SpreadsheetCalculator.ExpressionEngine.Parsing;
 using SpreadsheetCalculator.ExpressionEngine.Tokenization;
+using SpreadsheetCalculator.Utils;
 
 namespace SpreadsheetCalculator.Spreadsheet
 {
@@ -21,8 +22,6 @@ namespace SpreadsheetCalculator.Spreadsheet
 
         // Store spreadsheet Cells.
         private Matrix _matrix;
-
-        private readonly Cell _emptyCell;
 
         private readonly IParser _parser;
         
@@ -47,8 +46,6 @@ namespace SpreadsheetCalculator.Spreadsheet
         {
             _parser = parser ?? throw new ArgumentNullException(nameof(parser));
             _tokenizer = tokenizer ?? throw new ArgumentNullException(nameof(tokenizer));
-
-            _emptyCell = CreateCell(string.Empty);
         }
 
         /// <summary>
@@ -99,7 +96,7 @@ namespace SpreadsheetCalculator.Spreadsheet
 
             if (cell.CellState == CellState.SyntaxError)
             {
-                Console.WriteLine($"Invalid expression {new CellPosition(column, row)}: {value}");
+                Console.WriteLine($"Invalid expression { CellPosition.CoordinatesToKey(column, row) }: {value}");
             }
 
             _matrix[column, row] = cell;
@@ -112,9 +109,9 @@ namespace SpreadsheetCalculator.Spreadsheet
         /// <param name="value">New cell value.</param>
         public void SetValue(string key, string value)
         {
-            var position = new CellPosition(key);
+            (var column, var row) = CellPosition.KeyToCordinates(key);
 
-            SetValue(position.Column, position.Row, value);
+            SetValue(column, row, value);
         }
 
 
@@ -128,9 +125,7 @@ namespace SpreadsheetCalculator.Spreadsheet
         {
             if (_matrix.InMatrix(column, row))
             {
-                var cell = _matrix[column, row] ?? _emptyCell;
-
-                return cell;
+                return _matrix[column, row];
             }
 
             throw new IndexOutOfRangeException("Requested cell is out of spreadsheet.");
@@ -143,9 +138,9 @@ namespace SpreadsheetCalculator.Spreadsheet
         /// <returns>Current cell value.</returns>
         public IViewCell GetValue(string key)
         {
-            var position = new CellPosition(key);
+            (var column, var row) = CellPosition.KeyToCordinates(key);
 
-            return GetValue(position.Column, position.Row);
+            return GetValue(column, row);
         }
 
         /// <summary>
@@ -171,25 +166,32 @@ namespace SpreadsheetCalculator.Spreadsheet
         /// <exception cref="SpreadsheetInternalException">Cyclic dependency found.</exception>
         public void Calculate()
         {
-            IList<Cell> sortedCells;
+            IList<string> sortedKeys;
 
             try
             {
-                sortedCells = TopologicalSort.Sort(
-                    _matrix.AsEnumerable(),
-                    cell => cell.CellDependencies
-                        .Select(GetCellByKey)
-                        .Where(cellReference => cellReference!= null)
+                sortedKeys = TopologicalSort.Sort(
+                    GetAllKeys(),
+                    key => GetCellByKey(key).CellDependencies.Where(d => CellInSpreadsheet(d))
                 );
             }
             catch (CyclicDependencyException exception)
             {
-                throw new SpreadsheetInternalException("Cannot calculate spreadsheet, there is cyclic dependencies between cells.", exception);
+                throw new SpreadsheetInternalException($"Cannot calculate spreadsheet, there is cyclic dependencies between cells. {exception.Message}", exception);
             }
 
-            foreach (var cell in sortedCells)
+            foreach (var key in sortedKeys)
             {
-                CalculateCell(cell);
+                CalculateCell(GetCellByKey(key));
+            }
+
+            // Validate that all cells were calculated.
+            foreach (var key in GetAllKeys())
+            {
+                if (GetCellByKey(key).CellState == CellState.Pending)
+                {
+                    throw new SpreadsheetInternalException($"The cell {key} was lost during the calculation.");
+                }
             }
         }
 
@@ -215,7 +217,7 @@ namespace SpreadsheetCalculator.Spreadsheet
 
         private void CalculateCell(Cell cell)
         {
-            var cellDependencies = cell.CellDependencies.ToDictionary(cellRef => cellRef, cellRef => (IViewCell)GetCellByKey(cellRef));
+            var cellDependencies = cell.CellDependencies.ToDictionary(cellRef => cellRef, cellRef => GetCellByKey(cellRef));
 
             if (cell.CellState == CellState.Pending)
             {
@@ -247,10 +249,30 @@ namespace SpreadsheetCalculator.Spreadsheet
         // Convert cell reference to column & row indexes in spreadsheet inner representation.
         private Cell GetCellByKey(string key)
         {
-            var position = new CellPosition(key);
+            (int column, int row) = CellPosition.KeyToCordinates(key);
 
             // Check that cell reference inside current spreadsheet
-            return _matrix.InMatrix(position.Column, position.Row) ? _matrix[position.Column, position.Row] : null;
+            return _matrix.InMatrix(column, row) ? _matrix[column, row] : null;
+        }
+
+        // Check if cell in spreadsheet.
+        private bool CellInSpreadsheet(string key)
+        {
+            (int column, int row) = CellPosition.KeyToCordinates(key);
+
+            return _matrix.InMatrix(column, row);
+        }
+
+        // Get plain collection (row by row) of all cells in Spreadsheet.       
+        private IEnumerable<string> GetAllKeys()
+        {
+            for (var column = 1; column <= ColumnsCount; column++)
+            {
+                for (var row = 1; row <= RowsCount; row++)
+                {
+                    yield return CellPosition.CoordinatesToKey(column, row);
+                }
+            }
         }
 
         /// <summary>
@@ -287,6 +309,7 @@ namespace SpreadsheetCalculator.Spreadsheet
                 bool InRange(int index, int start, int end) => start <= index && index <= end;
             }
 
+
             /// <summary>
             /// Define the indexer to allow client code to use [] notation.
             /// </summary>
@@ -297,21 +320,6 @@ namespace SpreadsheetCalculator.Spreadsheet
             {
                 get => Cells[column - 1, row - 1];
                 set => Cells[column - 1, row - 1] = value;
-            }
-
-            /// <summary>
-            /// Get plain collection (row by row) of all elements in Matrix.
-            /// </summary>
-            /// <returns>All matrix elements row by row.</returns>
-            public IEnumerable<Cell> AsEnumerable()
-            {
-                for (var i = 0; i < ColumnsCount; i++)
-                {
-                    for (var j = 0; j < RowsCount; j++)
-                    {
-                        yield return Cells[i, j];
-                    }
-                }
             }
         }
     }

@@ -7,104 +7,76 @@ namespace SpreadsheetCalculator.Tests.DirectedGraph
 {
     public class TopologicalSortTests
     {
-        private class Node
-        {
-            private string Name { get; }
-            public List<Node> Dependencies { get; }
-
-            public Node(string name, params Node[] dependencies)
-            {
-                Name = name;
-                Dependencies = dependencies.ToList();
-            }
-
-            public override bool Equals(object obj)
-            {
-                return obj is Node node && Equals(node);
-            }
-
-            public bool Equals(Node other)
-            {
-                return Name == other.Name;
-            }
-
-            public override int GetHashCode()
-            {
-                return Name.GetHashCode();
-            }
-        }
-
         [Fact]
         public void Sort_EmptyGraph_GraphRemainsEmpty()
         {
-            var emptyGraph = new Node[0];
-
-            Assert.Equal(0, TopologicalSort.Sort(emptyGraph, item => item.Dependencies).Count);
+            Assert.Equal(0, TopologicalSort.Sort(new string[0], item => new string[0]).Count);
         }
 
         [Fact]
         public void Sort_DirectedGraphWithoutEdges_NothingToSort()
         {
-            var a = new Node("A");
-            var b = new Node("B");
-            var c = new Node("C");
+            Dictionary<string, string[]> mock = new Dictionary<string, string[]>();
+            mock.Add("A", new string[0]);
+            mock.Add("B", new string[0]);
+            mock.Add("C", new string[0]);
 
-            var graphWithoutEdges = new[] { a, b, c };
+            var graphWithoutEdges = new[] { "A", "B", "C" };
 
-            Assert.Equal(graphWithoutEdges, TopologicalSort.Sort(graphWithoutEdges, item => item.Dependencies));
+            Assert.Equal(graphWithoutEdges, TopologicalSort.Sort(graphWithoutEdges, item => mock[item]));
         }
 
         [Fact]
         public void Sort_TrivialDirectedGraph_GraphSorted()
         {
-            var a = new Node("A");
-            var b = new Node("B", a);
-            var c = new Node("C", b);
-            var d = new Node("D", c);
+            Dictionary<string, string[]> mock = new Dictionary<string, string[]>();
+            mock.Add("A", new string[0]);
+            mock.Add("B", new[] { "A" });
+            mock.Add("C", new[] { "B" });
+            mock.Add("D", new[] { "C" });
 
-            var unsorted = new[] { d, c, b, a };
-            var expected = new[] { a, b, c, d };
+            var unsorted = new[] { "D", "C", "B", "A" };
+            var expected = new[] { "A", "B", "C", "D" };
 
-            Assert.Equal(expected, TopologicalSort.Sort(unsorted, item => item.Dependencies));
+            Assert.Equal(expected, TopologicalSort.Sort(unsorted, item => mock[item]));
         }
 
         [Fact]
         public void Sort_DirectedGraph_GraphSorted()
         {
-            var a = new Node("A");
-            var c = new Node("C");
-            var d = new Node("D", a);
-            var f = new Node("F");
-            var h = new Node("H");
-            var g = new Node("G", f, h);
-            var e = new Node("E", d, g);
-            var b = new Node("B", c, e);
+            Dictionary<string, string[]> mock = new Dictionary<string, string[]>();
+            mock.Add("A", new string[0]);
+            mock.Add("B", new[] { "C", "E" });
+            mock.Add("C", new string[0]);
+            mock.Add("D", new[] { "A" });
+            mock.Add("E", new[] { "D", "G" });
+            mock.Add("F", new string[0]);
+            mock.Add("G", new[] { "F", "H" });
+            mock.Add("H", new string[0]);
+            
 
-            var unsorted = new[] { a, b, c, d, e, f, g, h };
-            var expected = new[] { a, c, d, f, h, g, e, b };
+            var unsorted = new[] { "A", "B", "C", "D", "E", "F", "G", "H" };
+            var expected = new[] { "A", "C", "D", "F", "H", "G", "E", "B" };
 
-
-            Assert.Equal(expected, TopologicalSort.Sort(unsorted, item => item.Dependencies));
+            Assert.Equal(expected, TopologicalSort.Sort(unsorted, item => mock[item]));
         }
 
         [Fact]
         public void Sort_DirectedGraphWithCyclicDependency_ThrowCyclicDependencyException()
         {
-            var a = new Node("A");
-            var c = new Node("C");
-            var h = new Node("H");
-            var d = new Node("D", a);
-            var e = new Node("E", d);
-            var b = new Node("B", c, e);
-            var f = new Node("F", e);
-            var g = new Node("G", f, h);
+            Dictionary<string, string[]> mock = new Dictionary<string, string[]>();
+            mock.Add("A", new string[0]);
+            mock.Add("B", new[] { "C", "E" });
+            mock.Add("C", new string[0]);
+            mock.Add("D", new[] { "A" });
+            mock.Add("E", new[] { "D", "G" }); //Cyclic Dependency: E -> G -> F -> E
+            mock.Add("F", new[] { "E" });
+            mock.Add("G", new[] { "F", "H" });
+            mock.Add("H", new string[0]);
+            
+            var unsorted = new[] { "A", "B", "C", "D", "E", "F", "G", "H" };
 
-            // Add Cyclic Dependency
-            e.Dependencies.Add(g);
-
-            var unsorted = new[] { a, b, c, d, e, f, g, h };
-
-            Assert.Throws<CyclicDependencyException>(() => TopologicalSort.Sort(unsorted, item => item.Dependencies));
+            Assert.Throws<CyclicDependencyException>(() => TopologicalSort.Sort(unsorted, item => mock[item]));
         }
     }
 }

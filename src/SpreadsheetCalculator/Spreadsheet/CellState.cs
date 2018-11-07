@@ -16,13 +16,13 @@
         Calculated,
 
         /// <summary>
-        /// Cell formula not valid, there is syntax error in it.  
+        /// Cell formula not valid, there is syntax error in it.
         /// </summary>
         SyntaxError,
 
         /// <summary>
-        /// There's something wrong with the way your formula is typed. 
-        /// Or, there's something wrong with the cells you are referencing." 
+        /// There's something wrong with the way your formula is typed.
+        /// Or, there's something wrong with the cells you are referencing.
         /// </summary>
         CellValueError
     }
