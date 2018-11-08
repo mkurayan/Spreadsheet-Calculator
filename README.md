@@ -73,14 +73,27 @@ Result
 You should not have cyclic dependencies in the spreadsheet.
 If the program finds a cyclic dependency in the spreadsheet it will report these to the user and exit. 
 
-Example: Cell A1 refer cell B1, cell B1 refer cel C1, cell C1 refer cell A1.
-As result, we have a cyclic dependency between cells A1, B1 and C1.
+Example 1: Cell A1 refer cell B1, cell B1 refer cel A1.
+As result, we have a cyclic dependency between cells A1 and B1.
 
 | | A | B | C |
 |-|-|-|-|
-| 1 | B1 | C1 | A1 |
+| 1 | B1 | C1 | 7 |
 
 Result
 ```sh
-Cyclic dependency found: A1 -> B1 -> C1 -> A1
+Cyclic dependency found: A1 -> B1 -> A1
 ```
+Example 2: Spreadsheet with cyclic dependency from file input2.txt
+Cell A1 refer B1, B1 refer A2, A2 refer C1, C1 refer A1
+
+| | A | B | C |
+|-|-|-|-|
+| 1 | B1 + 1 | 2 + 3 + A2 | -A1 + 2 |
+| 2 | 10 / C1 | A2 * (C1 + 2) | 20 / (A1 - B2) |
+
+Result
+```sh
+Cyclic dependency found: A1 -> B1 -> A2 -> C1 -> A1
+```
+
